@@ -29,7 +29,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.humanize',
-    # thirdparty apps:
+    # third party apps:
     'admin_honeypot',
     # my apps
     'category',
