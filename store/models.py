@@ -27,8 +27,6 @@ class Product(models.Model):
         verbose_name = "محصول"
         verbose_name_plural = "محصولات"
 
-    # this is IMPORTANT -> remove image from here and add use default variation image
-
     def url(self):
         return reverse('single_product', args=[self.category.slug, self.slug])
 
@@ -60,86 +58,39 @@ class VariationManager(models.Manager):
         verbose_name = "سازمان دهنده مشخصات"
         verbose_name_plural = "سازمان دهنده مشخصات"
 
-    def both_separately(self):
+    def get_product_variations(self):
         variations = super(VariationManager, self).filter(is_available=True)
-        sizes, colors = set(), set()
-        for var in variations:
-            sizes.add(var.size)
-            colors.add(var.color)
-        return sizes, colors
+        return variations
 
-    def by_size(self):
-        variations = super(VariationManager, self).filter(is_available=True)
-        sizes = set()
-        for var in variations:
-            sizes.add(var.size)
-        return sizes
-
-    def by_color(self):
-        variations = super(VariationManager, self).filter(is_available=True)
-        colors = set()
-        for var in variations:
-            colors.add(var.color)
-        return colors
-
-    def find_specific_color(self, color):
-        """
-                returns color variations
-            :return:list
-            """
-        return super(VariationManager, self).filter(color=color, is_available=True)
-
-    def find_specific_size(self, size):
-        """
-                returns size variations
-            :return:list
-            """
-        return super(VariationManager, self).filter(size=size, is_available=True)
+    def find_specific_variation(self, variation_name):
+        return super(VariationManager, self).filter(name=variation_name, is_available=True)
 
     def displayable(self):
-        """
-            check if the product has at least one available variation for each defined parameter
-            :return:boolean
-            """
-        # **** add more checking like checking product.stock and product.available
         return super(VariationManager, self).all().count() > 0
 
-    def item_exists(self, color, size):
-        """
-                this will check if a product with these preferred color and size exists in the inventory
-                :param color:
-                :param size:
-                :return:boolean
-            """
-        return super(VariationManager, self).filter(size=size, color=color).count() > 0
+    def item_exists(self, variation_name: str):
+        return super(VariationManager, self).filter(name=variation_name).count() > 0
 
-    def variation_count(self, color, size):
-        """
-                this will check if a product with these preferred color and size exists in the inventory
-                :param color:
-                :param size:
-                :return:boolean
-            """
-        return super(VariationManager, self).filter(size=size, color=color, is_available=True).count()
+    def variation_count(self, variation: str):
+        return super(VariationManager, self).filter(name=variation,is_available=True).count()
 
 
 class Variation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     class Meta:
-        verbose_name = "تایپ محصول"
+        verbose_name = "نوع محصول"
         verbose_name_plural = "انواع محصول"
 
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="محصول")
     # parameter means that on what parameter this variation differs from other variations with same Product
-    size = models.CharField(max_length=10, verbose_name="سایز")
-    color = models.CharField(max_length=20, verbose_name="رنگ")
+    name = models.CharField(max_length=64, verbose_name="نام نوع")
 
     is_available = models.BooleanField(default=True, verbose_name="در دسترس بودن")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به روزرسانی مشخصات")
-    stock = models.IntegerField(default=0, verbose_name="موجودی")  # number of remaining
     objects = VariationManager()
+    price = models.IntegerField(verbose_name="قیمت")
 
     def restaurant_name(self):
         return self.product.restaurant.name_fa
@@ -148,7 +99,7 @@ class Variation(models.Model):
         return self.id
 
     def __str__(self):
-        return f'{self.size} : {self.color}'
+        return f'{self.name}'
 
 
 class Gallery(models.Model):
@@ -166,7 +117,7 @@ class Gallery(models.Model):
 class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="کالای مرتبط")
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="نویسنده")
-    comment = models.TextField(max_length=500, blank=True, verbose_name="سخنوری")
+    comment = models.TextField(max_length=1024, blank=True, verbose_name="کامنت")
     rating = models.FloatField(verbose_name="امتیاز")
     ip = models.CharField(max_length=20, blank=True)
     verified = models.BooleanField(default=True, verbose_name="وضعیت تایید")

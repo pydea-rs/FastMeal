@@ -11,25 +11,26 @@ class GalleryInlinePanel(admin.TabularInline):
 
 class ProductAdminPanel(admin.ModelAdmin):
     list_display = ('name', 'category', 'restaurant', 'is_available',)
-    list_editable = ('is_available', )
-    prepopulated_fields = {'slug': ('name', )}
-    list_filter = ('category', 'is_available', 'restaurant', 'discount', )
-    readonly_fields = ('created_at', 'updated_at', )
-    search_fields = ('name', 'name_fa', 'category', 'content', 'restaurant__name', 'restaurant__name_fa', 'price', 'created_at',)
-    inlines = (GalleryInlinePanel, )
+    list_editable = ('is_available',)
+    prepopulated_fields = {'slug': ('name',)}
+    list_filter = ('category', 'is_available', 'restaurant', 'discount',)
+    readonly_fields = ('created_at', 'updated_at',)
+    search_fields = (
+        'name', 'name_fa', 'category', 'content', 'restaurant__name', 'restaurant__name_fa', 'price', 'created_at',
+    )
+    inlines = (GalleryInlinePanel,)
 
 
 # ،TODO: add inline variations below product panel
 class VariationAdminPanel(admin.ModelAdmin):
     list_display = ('product', 'restaurant_name', 'size', 'color',)
     list_editable = ('is_available', 'stock',)
-    list_filter = ('is_available', 'size', 'color', 'stock', )
+    list_filter = ('is_available', 'size', 'color', 'stock',)
     search_fields = ('size', 'color', 'product__name', 'product__name_fa')
-    readonly_fields = ('created_at', 'updated_at', )
+    readonly_fields = ('created_at', 'updated_at',)
 
 
 admin.site.register(Product, ProductAdminPanel)
 admin.site.register(Variation, VariationAdminPanel)
 admin.site.register(Review)  # TODO: Customize Review Panel
-admin.site.register(Gallery) # TODO: Customize Gallery Panel
-
+admin.site.register(Gallery)  # TODO: Customize Gallery Panel

@@ -2,7 +2,7 @@ import json
 
 from django.shortcuts import render, get_object_or_404, redirect
 from category.models import Category
-from .models import Product, Review, Gallery
+from .models import Product, Review, Gallery, Variation
 from .forms import ReviewForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -55,28 +55,17 @@ def product(request, category_filter, product_slug=None):
     context = dict()
     try:
         this_product = Product.objects.get(slug=product_slug, category__slug=category_filter)
-        sizes = this_product.variation_set.by_size()
-        dict_bysize_variations = {}
-        for s in sizes:
-            dict_bysize_variations[s] = list(this_product.variation_set.find_specific_size(s))
-            cs = {}
-            for c in dict_bysize_variations[s]:
-                cs[c.color] = c.stock
-            dict_bysize_variations[s] = cs
-
+        variations = Variation.objects.filter(product_id=this_product.id, is_available=True)
         reviews = Review.objects.filter(product=this_product, status=True)
 
         gallery = Gallery.objects.filter(product=this_product)
         context = {
             'this_product': this_product,
-            'sizes': sizes,
+            'variations': variations,
             'reviews': reviews,
             'gallery': gallery,
-            'dict_bysize_variations': json.dumps(dict_bysize_variations), # convert to json so it can be used in javascript
-
         }
     except Exception as ex:
-        # handle this seriously
         raise ex
 
     return render(request, 'store/product.html', context)
