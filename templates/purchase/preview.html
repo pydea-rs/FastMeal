@@ -85,20 +85,14 @@
                                                         <figcaption class="info">
                                                             <a href="{{item.product.url}}">
                                                                 {{ item.product }}
+                                                                {% if item.product.variation_set.count > 1 %}
+                                                                 - {{ item.variation }}
+                                                                {% endif %}
                                                             </a>
 
                                                             <p class="text-muted small text-center">
-                                                                دسته بندی: {{ item.product.category }} <br />
-                                                                سایز: {{ item.variation.size }} <br />
-                                                                رنگ: {{ item.variation.color }} <br />
-                                                                موجودی:
-                                                                {% if item.variation.stock > 3 %}
-                                                                    <span class="badge pill badge-success"> {{ item.variation.stock }} </span>
-                                                                {% elif item.variation.stock > 1 %}
-                                                                    <span class="badge pill badge-warning"> {{ item.variation.stock }} </span>
-                                                                {% else %}
-                                                                    <span class="badge pill badge-danger"> {{ item.variation.stock }} </span>
-                                                                {% endif %}
+                                                                دسته بندی: {{ item.product.category }}
+                                                            </p>
                                                         </figcaption>
                                                     </figure>
                                                 </td>
@@ -143,7 +137,7 @@
                             </dl>
                             <dl class="dlist-align">
                               <dt>هزینه پرداختی:</dt>
-                              <dd class="text-left text-success b"><strong>{{ order.must_be_paid | intcomma:False }}</strong>&nbsp;&nbsp; تومن</dd>
+                              <dd class="text-left text-success b"><strong>{{ order.final_cost | intcomma:False }}</strong>&nbsp;&nbsp; تومن</dd>
                             </dl>
                             <hr>
                             <a href="{{ order.check_url }}" class="btn btn-success btn-block btn-shaking">تایید نهایی</a>

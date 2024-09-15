@@ -2,7 +2,7 @@ from .models import Cart, TakenProduct
 
 
 # utilities in an app => are the methods (or classes, etc.) that are useful entirely in the project and are called from other apps too
-def open_stack(request):
+def open_cart(request):
     # using this session code, program will id user's cart
     #  if no session_key is generated yet, then create one first
     stack_id = None
@@ -34,7 +34,7 @@ def open_stack(request):
 
 def attach_current_stack_to_current_user(request, user):
     try:
-        stack = Cart.objects.get(sid=open_stack(request).ID())
+        stack = Cart.objects.get(sid=open_cart(request).ID())
         if stack is not None:
             stack.owner = user
             stack.save()

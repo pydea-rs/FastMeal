@@ -5,7 +5,7 @@ from .models import Cart, TakenProduct
 class TakenProductAdminPanel(admin.ModelAdmin):
     list_display = ('product',  'variation', 'cart', 'quantity', 'is_available', )
     list_filter = ('is_available', 'variation', 'cart', 'quantity', )
-    search_fields = ('product__name', 'product__name_fa', 'variation__color', 'variation__size', 
+    search_fields = ('product__name', 'product__name_fa', 'variation__name', 
                      'cart__sid', 'cart__owner__fname', 'cart__owner__lname',)
     list_editable = ('is_available', )
     readonly_fields = ('added_to_cart_at',)

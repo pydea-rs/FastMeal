@@ -5,7 +5,7 @@ from django.contrib import messages
 
 
 def home(request):
-    popular_products = Product.objects.all().filter(available=True).order_by('-created')[:10]
+    popular_products = Product.objects.all().filter(is_available=True).order_by('-created')[:10]
     reviews = None
     for product in popular_products:
         reviews = Review.objects.filter(product_id=product.id, status=True)

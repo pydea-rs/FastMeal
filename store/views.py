@@ -12,7 +12,7 @@ def store(request, category_filter=None):
     max_price = min_price = 0
     category_fa = None
     try:
-        products = Product.objects.all()  # .filter(available=True)
+        products = Product.objects.all()
         if category_filter:
             obj_expected_categories = get_object_or_404(Category, slug=category_filter)
             category_fa = obj_expected_categories.name_fa

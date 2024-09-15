@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
 from cart.models import TakenProduct
 from .forms import OrderForm, ReserveTransactionForm
-from cart.utlities import open_stack
+from cart.utlities import open_cart
 from .models import Order, OrderReceiver, Transaction, PurchasedItem, Receipt
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
@@ -12,11 +12,10 @@ def finalize_order(request, order_key, method, status, reference_id=None, amount
     order = None
     try:
         order = Order.objects.get(buyer=request.user, key=order_key)
-        # order.how_much_to_pay()
         if order:
             order.verified = status.lower()
             # now we ship the taken product items to ordered product items
-            user_stack = open_stack(request)
+            user_stack = open_cart(request)
             user_stack.submit_bill()  # to make sure total products in the cart are billed successfully
             stack_items = TakenProduct.objects.filter(stack=user_stack)
             for item in stack_items:
@@ -29,17 +28,10 @@ def finalize_order(request, order_key, method, status, reference_id=None, amount
                 purchased_item.quantity = item.quantity
                 purchased_item.cost = item.total_absolute_price()
                 purchased_item.delivered = order.verified == 'delivered'
-                # purchased_item.color = ...?
-                # purchased_item.size = ...?
                 purchased_item.variation = item.variation
                 purchased_item.save()
 
-                # **** NOTE ****
-                # when applying .variations the tutorial goes other idiotic way
-                # and does all the unnecessary things there
-                # i do that in a wise way that anyone would do
-                # but when running anything went wrong check this part again
-                if purchased_item.resources_are_enough():
+                if purchased_item.product.is_available and purchased_item.variation.is_available:
                     # purchased_item.save()
 
                     # reduce the sold products from variation.stock values
@@ -55,7 +47,6 @@ def finalize_order(request, order_key, method, status, reference_id=None, amount
                     purchased_item.save()
                     item.delete()  # *** CORRECT ???? ***
                 else:
-                    purchased_item.anything_wrong = "تعداد درخواستی شما از این نوع کالا، بیشتر از موجودی انبار است."
                     order.verified = "failed"
             order.save()
             user_stack.delete()
@@ -75,7 +66,7 @@ def submit_order(request):
             return redirect('login')
 
         user = request.user
-        user_stack = open_stack(request)
+        user_stack = open_cart(request)
         user_stack.submit_bill()  # to make sure total products in the cart are billed successfully
         stack_items = TakenProduct.objects.filter(stack=user_stack)
         # use stack_items or add a quantity field to cart model?
@@ -107,8 +98,6 @@ def submit_order(request):
                 order.cost = user_stack.worth
                 order.discounts = user_stack.discounts
                 order.shipping_cost = 50000  # this is for test; ask pouya about this
-                order.how_much_to_pay()  # calculate the cose and update the order.must_be_paid
-                # update the ip of the user again just to make sure
 
                 order.owner = user
                 order.owner.ip = request.META.get('REMOTE_ADDR')
@@ -185,7 +174,7 @@ def reserve_order(request):
             receipt = Receipt(reference_id=form.cleaned_data['reference_id'], image=form.cleaned_data['image'],
                               amount=form.cleaned_data['amount'], order_key=form.cleaned_data['order_key'])
             receipt.save()
-            transaction = Transaction(performer=request.user, method="reserve", validation="pending", receipt=receipt)
+            transaction = Transaction(source=request.user, method="reserve", validation="pending", receipt=receipt)
             transaction.save()
             order = Order.objects.get(key=form.cleaned_data["order_key"], buyer=request.user)
             if order:

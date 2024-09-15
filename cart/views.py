@@ -3,18 +3,18 @@ from store.models import Product, Variation
 from .models import Cart, TakenProduct
 from django.core.exceptions import ObjectDoesNotExist
 from django.contrib.auth.decorators import login_required
-from .utlities import open_stack
+from .utlities import open_cart
 from django.contrib import messages
 
 
-def submit_preferred_variation(variation, taken=None, product=None, current_stack=None):
+def submit_preferred_variation(variation, taken=None, product=None, current_cart=None):
     if variation:
         if not taken:
-            if product and current_stack:
-                taken = TakenProduct.objects.create(product=product, stack=current_stack, variation=variation)
+            if product and current_cart:
+                taken = TakenProduct.objects.create(product=product, cart=current_cart, variation=variation)
             elif not product:
                 raise TakenProduct.DoesNotExist('Unknown product. cannot create a new Taken field')
-            elif not current_stack:
+            elif not current_cart:
                 raise Cart.DoesNotExist('Something went wrong while opening a new shopping cart.')
         taken.quantity = 1
         taken.save()
@@ -24,10 +24,10 @@ def submit_preferred_variation(variation, taken=None, product=None, current_stac
 
 def put_back(request, product_id, taken_item_id):
     product = get_object_or_404(Product, id=product_id)
-    current_stack = None
+    current_cart = None
     try:
-        current_stack = open_stack(request)
-        taken = TakenProduct.objects.get(id=taken_item_id, product=product, stack=current_stack)
+        current_cart = open_cart(request)
+        taken = TakenProduct.objects.get(id=taken_item_id, product=product, stack=current_cart)
         taken.decrement_quantity()
         taken.save()
 
@@ -42,10 +42,10 @@ def put_back(request, product_id, taken_item_id):
 
 def put_all(request, product_id, taken_item_id, ):
     product = get_object_or_404(Product, id=product_id)
-    current_stack = None
+    current_cart = None
     try:
-        current_stack = open_stack(request)
-        TakenProduct.objects.get(id=taken_item_id, product=product, stack=current_stack).delete()
+        current_cart = open_cart(request)
+        TakenProduct.objects.get(id=taken_item_id, product=product, stack=current_cart).delete()
 
     except TakenProduct.DoesNotExist:
         # handle this error (actually it must never happen
@@ -58,14 +58,14 @@ def put_all(request, product_id, taken_item_id, ):
 
 def take_another(request, product_id, taken_item_id):
     product = Product.objects.get(id=product_id)
-    current_stack = None
+    current_cart = None
     try:
-        current_stack = open_stack(request)
-        taken = TakenProduct.objects.get(id=taken_item_id, product=product, stack=current_stack)
+        current_cart = open_cart(request)
+        taken = TakenProduct.objects.get(id=taken_item_id, product=product, stack=current_cart)
         taken.increment_quantity()
         taken.save()
     except TakenProduct.DoesNotExist:
-        taken = TakenProduct.objects.create(product=product, stack=current_stack, quantity=1, total_price=product.price)
+        taken = TakenProduct.objects.create(product=product, stack=current_cart, quantity=1, total_price=product.price)
         taken.save()
     except ObjectDoesNotExist:
         # handle this error seriously
@@ -77,36 +77,34 @@ def take_product(request, product_id):
     product = Product.objects.get(id=product_id)
     variation = None
     if request.method == 'POST':
-        # collect all the user selection on product variation
-        color = request.POST['color']
-        size = request.POST['size']
+        variation = request.POST['variation']
 
         try:
-            variation = Variation.objects.get(product=product, color=color, size=size)
-            if not variation.stock:
+            variation = Variation.objects.get(product=product, name=variation)
+            if not variation.is_available:
                 messages.error(request, "این کالا موجود نیست!")
                 return redirect(request.META.get('HTTP_REFERER'))
         except:  # such as csrf_token
             pass
 
-        current_stack = None
+        current_cart = None
         try:
-            current_stack = open_stack(request)
+            current_cart = open_cart(request)
             try:
-                taken = TakenProduct.objects.get(variation=variation, stack=current_stack)
+                taken = TakenProduct.objects.get(variation=variation, stack=current_cart)
             except:
                 taken = None
 
             if (not taken or not taken.quantity) and product.is_available:
                 submit_preferred_variation(taken=taken, variation=variation, product=product,
-                                           current_stack=current_stack)
+                                           current_cart=current_cart)
             else:
                 # SHOW ERROR MESSAGE
 
                 return redirect('cart')
         except TakenProduct.DoesNotExist:
             # handle this error (actually it must never happen
-            submit_preferred_variation(variation=variation, product=product, current_stack=current_stack)
+            submit_preferred_variation(variation=variation, product=product, current_cart=current_cart)
 
         except ObjectDoesNotExist:
             # handle this error seriously
@@ -117,20 +115,20 @@ def take_product(request, product_id):
 
 def stack(request):
     try:
-        context = open_stack(request).submit_bill()
+        context = open_cart(request).submit_bill()
     except ObjectDoesNotExist:
         # meaning cart does not exist
         context = {
             'taken_products': [],
             'cart': None,
         }
-    return render(request, 'store/stack.html', context)
+    return render(request, 'store/cart.html', context)
 
 
 @login_required(login_url='login')
 def order(request):
     try:
-        context = open_stack(request).submit_bill()
+        context = open_cart(request).submit_bill()
     except ObjectDoesNotExist:
         # meaning cart does not exist
         context = {

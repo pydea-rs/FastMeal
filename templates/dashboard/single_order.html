@@ -71,12 +71,9 @@
                                                 <tr>
                                                     <td  class="table-column-1 text-center p-4">
                                                         {{ item.product }}
-                                                        <p class="text-muted my-0">
-                                                            سایز: {{ item.variation.size }}
-                                                        </p>
-                                                        <p class="text-muted my-0">
-                                                            رنگ: {{ item.variation.color }}
-                                                        </p>
+                                                        {% if item.product.variation_set.count > 1 %}
+                                                            - {{ item.variation }}
+                                                        {% endif %}
                                                     </td>
                                                     <td class="table-column-1 text-center p-3">1</td>
                                                     <td class="table-column-1 text-center p-3">{{ item.cost | intcomma:False }}</td>
@@ -98,7 +95,7 @@
                                                 </tr>
                                                 <tr>
                                                     <th class="text-right p-4">هزینه نهایی</th>
-                                                    <th colspan="2" class="text-center p-3">{{ order.must_be_paid }}</th>
+                                                    <th colspan="2" class="text-center p-3">{{ order.final_cost }}</th>
                                                 </tr>
                                             </tfoot>
                                         </table>

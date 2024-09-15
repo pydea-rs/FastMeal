@@ -58,21 +58,24 @@ class VariationManager(models.Manager):
         verbose_name = "سازمان دهنده مشخصات"
         verbose_name_plural = "سازمان دهنده مشخصات"
 
-    def get_product_variations(self):
+    @property
+    def all(self):
         variations = super(VariationManager, self).filter(is_available=True)
         return variations
 
     def find_specific_variation(self, variation_name):
         return super(VariationManager, self).filter(name=variation_name, is_available=True)
 
+    @property
     def displayable(self):
-        return super(VariationManager, self).all().count() > 0
+        return super(VariationManager, self).filter(is_available=True).count() > 0
 
     def item_exists(self, variation_name: str):
         return super(VariationManager, self).filter(name=variation_name).count() > 0
 
-    def variation_count(self, variation: str):
-        return super(VariationManager, self).filter(name=variation,is_available=True).count()
+    @property
+    def count(self):
+        return super(VariationManager, self).filter(is_available=True).count()
 
 
 class Variation(models.Model):

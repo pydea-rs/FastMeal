@@ -42,7 +42,7 @@ class Transaction(models.Model):
     receipt = models.ForeignKey(Receipt, on_delete=models.CASCADE, blank=True, null=True, verbose_name='رسید')
     validation = models.CharField(max_length=20, choices=VALIDATION_STATUS,
                                   default='pending', verbose_name='صحت تراکنش')
-    performer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='پرداخت کننده')
+    source = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='پرداخت کننده')
     method = models.CharField(max_length=20, blank=False, choices=METHODS, verbose_name='روش پرداخت')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روزرسانی')
@@ -105,7 +105,7 @@ class Order(models.Model):
     key = models.CharField(max_length=20, verbose_name='شماره سفارش')
     owner = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, verbose_name='مالک')
     transaction = models.ForeignKey(Transaction, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='تراکنش')
-    receiver = models.ForeignKey(OrderReceiver, on_delete=models.PROTECT, verbose_name='مشخصات گیرنده')  # edit the on_delete
+    receiver = models.ForeignKey(OrderReceiver, on_delete=models.PROTECT, verbose_name='مشخصات گیرنده')
 
     # optionals
     notes = models.CharField(max_length=256, verbose_name="لحاظیات", blank=True, null=True, default='-')
@@ -120,7 +120,6 @@ class Order(models.Model):
     discounts = models.IntegerField(default=0, verbose_name='تخفیفی جات')  # FIXME: Update sections like this,
     # by the Single Source of Truth Rule, convert these to class properties and calculate properly.
     shipping_cost = models.IntegerField(default=0, verbose_name='هزینه ارسال')
-    final_cost = models.IntegerField(default=0, verbose_name='هزینه نهایی')
     seen = models.BooleanField(default=False, verbose_name='مشاهده توسط ادمین')
     whats_wrong = models.TextField(max_length=256, null=True, blank=True, verbose_name='علت رد سفارش')
 
@@ -128,8 +127,9 @@ class Order(models.Model):
         verbose_name = 'سفارش'
         verbose_name_plural = 'سفارش ها'
 
-    def how_much_to_pay(self):
-        self.final_cost = self.cost - self.discounts + self.shipping_cost
+    @property
+    def final_cost(self):
+        return self.cost - self.discounts + self.shipping_cost
 
     def __str__(self):
         return 'سفارشی به نام' + self.receiver.fullname()
@@ -186,9 +186,6 @@ class PurchasedItem(models.Model):
 
     def __str__(self):
         return f'{self.product} - {self.variation} [{self.quantity}]'
-
-    def resources_are_enough(self):
-        return self.variation.stock >= self.quantity
 
     def ID(self):
         return self.id

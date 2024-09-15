@@ -109,7 +109,7 @@ class PurchasedItemAdminPanel(admin.ModelAdmin):
     list_display = ('buyer', 'product', 'variation', 'quantity',)
     list_filter = ('delivered',)
     search_fields = (
-        'product__name', 'product__name_fa', 'order__key', 'variation__color', 'variation__size',
+        'product__name', 'product__name_fa', 'order__key', 'variation__name',
         'order__receiver__fname', 'order__receiver__lname', 'order__owner__fname', 'order__owner__lname',
     )
     list_per_page = 20
@@ -135,10 +135,10 @@ class ReceiptAdminPanel(admin.ModelAdmin):
 
 
 class TransactionAdminPanel(admin.ModelAdmin):
-    list_display = ('receipt', 'validation', 'performer', 'created_at')
+    list_display = ('receipt', 'validation', 'source', 'created_at')
     list_filter = ('validation', 'method',)
-    search_fields = ('receipt__reference_id', 'performer__fname',
-                     'performer__lname', 'validation', 'created_at', 'method',)
+    search_fields = ('receipt__reference_id', 'source__fname',
+                     'source__lname', 'validation', 'created_at', 'method',)
 
 
 admin.site.register(Receipt, ReceiptAdminPanel)

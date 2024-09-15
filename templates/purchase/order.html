@@ -81,16 +81,10 @@
 
                                                         <p class="text-muted small text-center">
                                                             {{ taken.product.category }}
-                                                            <br />
-                                                            {{ taken.variation.size }}
-                                                            {{ taken.variation.color }}
-                                                            {% if taken.variation.stock > 3 %}
-                                                                <span class="badge pill badge-success"> {{ taken.variation.stock }} </span>
-                                                            {% elif taken.variation.stock > 1 %}
-                                                                <span class="badge pill badge-warning"> {{ taken.variation.stock }} </span>
-                                                            {% else %}
-                                                                <span class="badge pill badge-danger"> {{ taken.variation.stock }} </span>
+                                                            {% if taken.product.variation_set.count > 1 %}
+                                                             - {{ taken.variation }}
                                                             {% endif %}
+                                                        </p>
                                                     </figcaption>
                                                 </figure>
                                             </td>

@@ -25,31 +25,20 @@
                                             <figure class="itemside align-items-center">
                                                 <div class="aside">
                                                     <a href="{{taken.product.url}}">
-                                                        <img href="{{taken.product.url}}" src="{{ taken.product.image.url }}" class="img-sm">
+                                                        <img href="{{taken.product.url}}" src="{{ taken.product.image.url }}" class="img-sm" alt="Image Not Loaded">
                                                     </a>
                                                 </div>
                                                 <figcaption class="info">
                                                     <a href="{{taken.product.url}}">
                                                         {{ taken.product }}
+                                                        {% if taken.product.variation_set.count > 1 %}
+                                                         - {{ taken.variation }}
+                                                        {% endif %}
                                                     </a>
 
                                                     <p class="text-muted small text-center">
                                                         دسته بندی: {{ taken.product.category }}
-                                                        <br />
-                                                        رنگ : {{taken.variation.color}}
-                                                        <br />
-                                                        سایز : {{taken.variation.size}}
-
-                                                        <br />
-
-                                                        موجودی:
-                                                        {% if taken.variation.stock > 3 %}
-                                                            <span class="badge pill badge-success"> {{ taken.variation.stock }} </span>
-                                                        {% elif taken.variation.stock > 1 %}
-                                                            <span class="badge pill badge-warning"> {{ taken.variation.stock }} </span>
-                                                        {% else %}
-                                                            <span class="badge pill badge-danger"> {{ taken.variation.stock }} </span>
-                                                        {% endif %}
+                                                    </p>
                                                 </figcaption>
                                             </figure>
                                         </td>
@@ -61,7 +50,7 @@
                                                     </div>
                                                     <input type="text" class="form-control"  value="{{taken.quantity}}" />
                                                     <div class="input-group-prepend">
-                                                        <a class="btn btn-light" type="button" href="{% url 'put_back' taken.product.ID taken.ID %}"> <i class="fa fa-minus"></i> </a>
+                                                        <a disabled="{{ taken.has_min_quantity }}" class="btn btn-light" type="button" href="{% url 'put_back' taken.product.ID taken.ID %}"> <i class="fa fa-minus"></i> </a>
                                                     </div>
                                                 </div> <!-- input-group.// -->
                                             </div> <!-- col.// -->
@@ -71,7 +60,7 @@
                                                 <h4>
                                                     <span class="mx-1 my-1 badge badge-pill badge-primary">{{ taken.total_price | intcomma:False }} تومن</span>
                                                 </h4>
-                                                <small class="text-muted">هرکدوم {{ taken.product.price | intcomma:False }} تومن </small>
+                                                <small class="text-muted">هرکدوم {{ taken.variation.price | intcomma:False }} تومن </small>
                                             </div> <!-- price-wrap .// -->
                                         </td>
                                         <td>
@@ -99,19 +88,19 @@
                         <div dir="rtl"  class="card-body text-right">
                             <dl class="dlist-align">
                               <dt>قیمت اصلی:</dt>
-                              <dd class="text-center text-primary">{{ stack.cost | intcomma:False }}&nbsp;&nbsp; تومن</dd>
+                              <dd class="text-center text-primary">{{ cart.cost | intcomma:False }}&nbsp;&nbsp; تومن</dd>
                             </dl>
                             <dl class="dlist-align">
                               <dt>تخفیف:</dt>
-                                {% if stack.discounts %}
-                                  <dd class="text-center text-danger">{{ stack.discounts | intcomma:False }}-  &nbsp;تومن</dd>
+                                {% if cart.discounts %}
+                                  <dd class="text-center text-danger">{{ cart.discounts | intcomma:False }}-  &nbsp;تومن</dd>
                                 {% else %}
                                   <dd class="mx-5 text-center text-danger">-</dd>
                                 {% endif %}
                             </dl>
                             <dl class="dlist-align">
                               <dt>هزینه نهایی:</dt>
-                              <dd class="text-center text-success b"><strong>{{ stack.final_cost | intcomma:False }}</strong>&nbsp;&nbsp; تومن</dd>
+                              <dd class="text-center text-success b"><strong>{{ cart.final_cost | intcomma:False }}</strong>&nbsp;&nbsp; تومن</dd>
                             </dl>
                             <hr>
                             <a href="{% url 'order' %}" class="btn btn-warning btn-block btn-shaking"> زد و بند </a>

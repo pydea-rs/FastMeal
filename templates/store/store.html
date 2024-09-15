@@ -66,7 +66,7 @@
                                                 {% endif %}
                                             </div>
                                         </div> <!-- form-row.// -->
-                                        <button type="submit" class="btn btn-block btn-primary btn-shaking">لحاظ کن</button>
+                                        <button type="submit" class="btn btn-block btn-primary btn-shaking">اعمال</button>
                                     </div><!-- card-body.// -->
                                 </form>
                             </div>
@@ -102,13 +102,6 @@
                                                         <span class="price">{{ product.price | intcomma:False}} تومن</span>
                                                     </div>
                                                 </div>
-                                                {% if product.stock <= 0  %}
-                                                    <button disabled class="btn btn-block btn-dark">تا دسته فروش رفت</button>
-                                                {% elif not product.available %}
-                                                    <button disabled class="btn btn-block btn-danger">موجود نیست هنوز</button>
-                                                {% else %}
-                                                    <a href="{% url 'take_product' product.ID %}" enabled="true" class="btn btn-shaking btn-block btn-primary">نظرمه!</a>
-                                                {% endif %}
                                             </figcaption>
                                         </figure>
                                     </div>
@@ -123,18 +116,6 @@
                             </div>
                         </div>
                     {% endif %}
-
-
-                    <!--
-                    ****** ADD PAGINATION TO THE STORE SECTION **********
-                    <nav class="mt-4" aria-label="Page navigation sample">
-                        <ul class="pagination">
-                            <li class="page-item disabled"><a class="page-link" href="#">قبلی</a></li>
-                            <li class="page-item active"><a class="page-link" href="#">1</a></li>
-                            <li class="page-item"><a class="page-link" href="#">2</a></li>
-                            <li class="page-item"><a class="page-link" href="#">بعدی</a></li>
-                        </ul>
-                    </nav>-->
                 </main>
             </div>
         </div>

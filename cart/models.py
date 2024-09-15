@@ -66,10 +66,8 @@ class TakenProduct(models.Model):
         verbose_name_plural = 'آیتم های داخل سبد'
 
     def increment_quantity(self):
-        if self.product.is_available and self.quantity < self.variation.stock:
+        if self.product.is_available and self.variation.is_available:
             self.quantity += 1
-        # else:
-        # SHOW ERROR MESSAGE
 
     def decrement_quantity(self):
         self.quantity = self.quantity - 1 if self.quantity > 0 else 0
@@ -79,10 +77,10 @@ class TakenProduct(models.Model):
 
     def total_absolute_price(self):  # the price of all items of this product(and variation) without considering
         # discounts
-        return self.quantity * self.product.price
+        return self.quantity * self.variation.price
 
     def sell_price(self):  # each item price considering the discounts
-        return int(self.product.price * (100 - self.product.discount) / 100)
+        return int(self.variation.price * (100 - self.product.discount) / 100)
 
     def final_price(self):  # absolute price considering the quantity of the item and discounts
         return self.sell_price() * self.quantity
@@ -97,3 +95,7 @@ class TakenProduct(models.Model):
 
     def __unicode__(self):
         return self.product
+
+    @property
+    def has_min_quantity(self):
+        return self.quantity > 1
