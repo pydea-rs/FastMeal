@@ -40,15 +40,14 @@ class User(AbstractBaseUser):
     email = models.CharField(max_length=100, unique=True, verbose_name="نومه")
     ip = models.CharField(max_length=20, blank=True, verbose_name="IP")
 
-    # age, whatever, etc..
+    is_activated = models.BooleanField(default=False, verbose_name="فعال بودی اکانت")
 
-    # requirements:
-    joining_date = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ فیلی شدن")
-    last_login = models.DateTimeField(auto_now=True, verbose_name="آخرین دخول")
-    is_staff = models.BooleanField(default=False, verbose_name="فیل درباری")
-    is_superuser = models.BooleanField(default=False, verbose_name="فیل شاه")
-    is_activated = models.BooleanField(default=False, verbose_name="فعال شدن اکانت")
-    # is active, is online , ... ?
+    joined_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ عضویت")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به روزرسانی")
+    last_login_at = models.DateTimeField(auto_now=True, verbose_name="آخرین ورود به اکانت")
+
+    is_staff = models.BooleanField(default=False, verbose_name="اکانت کاری")
+    is_superuser = models.BooleanField(default=False, verbose_name="اکانت ادمین")
 
     USERNAME_FIELD = 'phone'
     REQUIRED_FIELDS = ['fname', 'lname', 'email']
@@ -74,12 +73,13 @@ class User(AbstractBaseUser):
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="کاربر")
     avatar = models.ImageField(blank=True, upload_to='photos/avatars/', null=True)
-    last_email_date = models.DateTimeField(default=None, blank=True, null=True)
+    last_email_sent_at = models.DateTimeField(default=None, blank=True, null=True)
     debt = models.IntegerField(default=0, verbose_name='بدهی شما')
     postal_code = models.CharField(max_length=10, verbose_name="کدپستی", blank=True)
     province = models.CharField(max_length=30, verbose_name="استان", blank=True)
     city = models.CharField(max_length=30, verbose_name="شهرستان", blank=True)
     address = models.TextField(max_length=64, verbose_name="نشونی", blank=True)
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به روزرسانی")
 
     def __str__(self):
         return self.user.__str__()
@@ -91,7 +91,7 @@ class Profile(models.Model):
 
         try:
             profile = Profile.objects.get(user=u)
-            time_passed_from_last_email = datetime.now().timestamp() - profile.last_email_date.timestamp() if profile.last_email_date else -1
+            time_passed_from_last_email = datetime.now().timestamp() - profile.last_email_sent_at.timestamp() if profile.last_email_sent_at else -1
         except Profile.DoesNotExist:
             time_passed_from_last_email = -1
         return time_passed_from_last_email, profile

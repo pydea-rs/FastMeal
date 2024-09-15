@@ -22,7 +22,7 @@ def send_request(request, order_key):
         callback_url = f'https://{request.get_host()}/zp/verify/{order_key}/'
         order = Order.objects.get(buyer=request.user, is_completed=False, key=order_key)
         if order and order_key:
-            amount = order.must_be_paid * 10  # amount of payment in rials
+            amount = order.final_cost * 10  # amount of payment in rials
             description = f'Paying {amount} Rials for buying some of the pheelstyle products'  # Required
             req_data = {
                 "merchant_id": merchant_id,
@@ -56,7 +56,7 @@ def verify(request, order_key):
         order = Order.objects.get(buyer=request.user, is_completed=False, key=order_key)
         order.how_much_to_pay()  # calling this is just for making sure that order.must_be_paid is absolutely correct
         if order and order_key:
-            amount = order.must_be_paid * 10  # amount of payment in rials
+            amount = order.final_cost * 10  # amount of payment in rials
 
             t_status = request.GET.get('Status')
             t_authority = request.GET['Authority']

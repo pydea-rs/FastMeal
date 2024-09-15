@@ -6,41 +6,41 @@
     <!-- ============================ COMPONENT REGISTER   ================================= -->
         <div class="card mx-auto" style="direction:rtl; max-width:520px; margin-top:40px;">
           <article class="card-body">
-            <header class="mb-4"><h4 class="card-title text-right">نوم نویسی</h4></header>
+            <header class="mb-4"><h4 class="card-title text-right">ثبت نام</h4></header>
                <hr />
                 {% include 'includes/toast.html' %}
                 <form action="{% url 'register' %}" method="POST">
                     {% csrf_token %}
                     <div class="form-row">
                         <div class="col form-group text-right">
-                            <label>اسم</label>
+                            <label>نام</label>
                             {{ form.fname }}
                         </div> <!-- form-group end.// -->
                         <div class="col form-group text-right">
-                            <label>فامیل</label>
+                            <label>نام خانوادگی</label>
                             {{ form.lname }}
                         </div> <!-- form-group end.// -->
                     </div> <!-- form-row end.// -->
                     <div class="form-group text-right">
-                        <label>نومه</label>
+                        <label>ایمیل</label>
                         {{ form.email }}
                     </div> <!-- form-group end.// -->
                     <div class="form-group text-right">
-                        <label>تیلیف</label>
+                        <label>شماره موبایل</label>
                         {{ form.phone }}
                     </div> <!-- form-group end.// -->
                     <div class="form-row text-right">
                         <div class="form-group col-md-6">
-                            <label>رمز شب</label>
+                            <label>رمزعبور</label>
                             {{ form.password }}
                         </div> <!-- form-group end.// -->
                         <div class="form-group col-md-6 text-right">
-                            <label>تایید رمز شب</label>
+                            <label>تایید رمزعبور</label>
                             {{ form.confirm_password }}
                         </div> <!-- form-group end.// -->
                     </div>
                     <div class="form-group">
-                        <button type="submit" class="btn btn-success btn-block btn-shaking">تامام!</button>
+                        <button type="submit" class="btn btn-success btn-block btn-shaking">ثبت نام</button>
                     </div> <!-- form-group// -->
                    <hr />
 
@@ -51,7 +51,7 @@
                 </form>
             </article><!-- card-body.// -->
         </div> <!-- card .// -->
-        <p style="direction:rtl" class="text-center mt-4">اگه قبلا نوم نویسی کردی از <a href="{% url 'login' %}">اینجا بیا تو</a>...</p>
+        <p style="direction:rtl" class="text-center mt-4">اگه قبلا ثبت نام کردی از <a href="{% url 'login' %}">اینجا وارد شو</a>...</p>
         <br><br>
     <!-- ============================ COMPONENT REGISTER  END.// ================================= -->
     </section>

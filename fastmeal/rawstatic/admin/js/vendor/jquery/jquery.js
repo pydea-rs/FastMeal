@@ -184,14 +184,14 @@ jQuery.fn = jQuery.prototype = {
 		return num < 0 ? this[ num + this.length ] : this[ num ];
 	},
 
-	// Take an array of elements and push it onto the stack
+	// Take an array of elements and push it onto the cart
 	// (returning the new matched element set)
 	pushStack: function( elems ) {
 
 		// Build a new jQuery matched element set
 		var ret = jQuery.merge( this.constructor(), elems );
 
-		// Add the old object onto the stack (as a reference)
+		// Add the old object onto the cart (as a reference)
 		ret.prevObject = this;
 
 		// Return the newly-formed element set
@@ -3860,7 +3860,7 @@ jQuery.extend( {
 								process();
 							} else {
 
-								// Call an optional hook to record the stack, in case of exception
+								// Call an optional hook to record the cart, in case of exception
 								// since it's otherwise lost when execution goes async
 								if ( jQuery.Deferred.getStackHook ) {
 									process.stackTrace = jQuery.Deferred.getStackHook();
@@ -5582,7 +5582,7 @@ jQuery.event = {
 			},
 
 			// For cross-browser consistency, suppress native .click() on links
-			// Also prevent it if we're currently inside a leveraged native-event stack
+			// Also prevent it if we're currently inside a leveraged native-event cart
 			_default: function( event ) {
 				var target = event.target;
 				return rcheckableType.test( target.type ) &&

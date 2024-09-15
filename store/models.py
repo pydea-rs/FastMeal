@@ -5,28 +5,27 @@ from django.urls import reverse
 import uuid
 from user.models import User
 from django.db.models import Avg, Count
-from shop.models import Shop
+from restaurant.models import Restaurant
 
 
 class Product(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False, verbose_name="آیدی")
-    name = models.CharField(max_length=64, unique=True, blank=False, verbose_name="نام به اجنبی")
-    name_fa = models.CharField(max_length=64, unique=True, blank=False, verbose_name="نام")
-    slug = models.SlugField(max_length=64, unique=True, verbose_name="اسلاگ")
-    description = models.TextField(max_length=1024, blank=True, verbose_name="مشخصات")
-    price = models.IntegerField(verbose_name="شیتیل")
-    available = models.BooleanField(default=True, verbose_name="در دسترس؟")
-    created = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
-    modified = models.DateTimeField(auto_now=True, verbose_name="تاریخ تغییر")
-    discount = models.IntegerField(default=0, verbose_name="تخفیف")  # discount in percentage
-    # below line delete all products associated when the category deletes!! expected?
-    category = models.ForeignKey(Category, on_delete=models.CASCADE, verbose_name="دسته بندی")
-    image = models.ImageField(upload_to='photos/products', verbose_name="تصویر")
-    shop = models.ForeignKey(Shop, on_delete=models.CASCADE, blank=False, null=False)
-    
+    name = models.CharField(max_length=128, unique=True, blank=False, verbose_name="نام (انگلیسی)")
+    name_fa = models.CharField(max_length=128, unique=True, blank=False, verbose_name="نام (فارسی)")
+    slug = models.SlugField(max_length=128, unique=True, verbose_name="نام صفحه (خودکار)")
+    content = models.TextField(max_length=256, blank=True, verbose_name="محتویات")
+    price = models.IntegerField(verbose_name="قیمت پایه")
+    is_available = models.BooleanField(default=True, verbose_name="در دسترس بودن")
+    discount = models.IntegerField(default=0, verbose_name="تخفیف")
+    category = models.ForeignKey(Category, on_delete=models.DO_NOTHING, verbose_name="دسته بندی")
+    image = models.ImageField(upload_to='photos/food', verbose_name="تصویر")
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.DO_NOTHING, blank=False, null=False)
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد مشخصات")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به روزرسانی مشخصات")
+
     class Meta:
-        verbose_name = "کالا"
-        verbose_name_plural = "کالا ها"
+        verbose_name = "محصول"
+        verbose_name_plural = "محصولات"
 
     # this is IMPORTANT -> remove image from here and add use default variation image
 
@@ -128,18 +127,22 @@ class Variation(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
     class Meta:
-        verbose_name = "گونه"
-        verbose_name_plural = "گونه ها"
+        verbose_name = "تایپ محصول"
+        verbose_name_plural = "انواع محصول"
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="کالای مرتبط")
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="محصول")
     # parameter means that on what parameter this variation differs from other variations with same Product
     size = models.CharField(max_length=10, verbose_name="سایز")
     color = models.CharField(max_length=20, verbose_name="رنگ")
 
-    is_available = models.BooleanField(default=True, verbose_name="در دسترس؟")
-    creation_date = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
+    is_available = models.BooleanField(default=True, verbose_name="در دسترس بودن")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به روزرسانی مشخصات")
     stock = models.IntegerField(default=0, verbose_name="موجودی")  # number of remaining
     objects = VariationManager()
+
+    def restaurant_name(self):
+        return self.product.restaurant.name_fa
 
     def ID(self):
         return self.id
@@ -162,17 +165,17 @@ class Gallery(models.Model):
 
 class Review(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name="کالای مرتبط")
-    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="کاربر")
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name="نویسنده")
     comment = models.TextField(max_length=500, blank=True, verbose_name="سخنوری")
-    rating = models.FloatField(verbose_name="امتیازدهی")
+    rating = models.FloatField(verbose_name="امتیاز")
     ip = models.CharField(max_length=20, blank=True)
-    status = models.BooleanField(default=True, verbose_name="وضعیت")
-    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ درافشانی")
-    updated_at = models.DateTimeField(auto_now=True, verbose_name="به روز رسانی نظز")
+    verified = models.BooleanField(default=True, verbose_name="وضعیت تایید")
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ارسال نظر")
+    updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به روزرسانی نظز")
 
     class Meta:
         verbose_name = 'فیلان بیسار'
         verbose_name_plural = 'فیلان ها و بیسارها'
 
     def __str__(self):
-        return f'{self.user.fname}: {self.comment}'
+        return f'{self.author.fname}: {self.comment}'

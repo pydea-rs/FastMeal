@@ -35,4 +35,4 @@ def search(request):
             return render(request, 'index.html', context)
     except:
         messages.error(request, "مشکلی در روند جستجو اتفاق افتاد. دوباره زور بزن ...")
-        return redirect(request.META.get('HTTP_REFERER'))
+    return redirect(request.META.get('HTTP_REFERER'))

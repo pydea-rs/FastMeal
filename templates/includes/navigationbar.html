@@ -19,7 +19,7 @@
         <div class="container">
             <div class="intro-banner-wrap">
                 {% comment %} <img src="{% static 'images/banners/1.jpg' %}" class="img-fluid rounded" alt="بارگذاری با مشکل مواجه شد"> {% endcomment %}
-                <div class="pheelstyle-banner">PHEELSTYLE</div>
+                <div class="top-banner">FASTMEAL</div>
             </div>
         </div> <!-- container //  -->
     </section>
@@ -78,7 +78,7 @@
                                 </div>
                             {% endif %}
                         </div>
-                        <a href="{% url 'stack' %}" class="widget-header mx-4">
+                        <a href="{% url 'cart' %}" class="widget-header mx-4">
                             <div class="icon icon-md rounded-circle border"><i class="fa fa-shopping-bag text-success pt-3"></i></div>
                             <span class="badge badge-pill badge-danger notify">{{stack_counter}}</span>
                         </a>

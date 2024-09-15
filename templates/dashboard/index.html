@@ -23,9 +23,9 @@
                                             <div class="row text-center">
                                                 <h3 class="w-100">
                                                     {% if user.is_superuser %}
-                                                        <h3 class="w-100">فیل شاه</h3>
+                                                        <h3 class="w-100">ادمین</h3>
                                                     {% else %}
-                                                        <h3 class="w-100">فیل فمیلی</h3>
+                                                        <h3 class="w-100">کاربر عادی</h3>
                                                     {% endif %}
                                                 </h3>
                                             </div>
@@ -52,7 +52,7 @@
                                 <div class="col-md-6 text-center  my-1">
                                     <div class="card h-100" style="border-radius: 15px">
                                         <div class="card-body">
-                                            <b class="card-title">تعداد زد و بندها</b>
+                                            <b class="card-title">تعداد سفارش ها</b>
                                             <h1 class="text-success">{{ your_orders_count }}</h1>
                                             <a class="btn btn-block btn-outline-secondary btn-shaking" href="{% url 'user-orders' %}">مشاهده</a>
                                         </div>

@@ -35,11 +35,11 @@ INSTALLED_APPS = [
     'category',
     'user',
     'store',
-    'stack',
+    'cart',
     'purchase',
     'dashboard',
     'devshare',
-    'shop'
+    'restaurant'
     # 'gateways'
 ]
 
@@ -74,7 +74,7 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'category.context_processor.list_categories',
-                'stack.context_processor.stack_counter'
+                'cart.context_processor.stack_counter'
             ],
         },
     },

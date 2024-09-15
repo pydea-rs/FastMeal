@@ -1,4 +1,4 @@
-from .models import Stack, TakenProduct
+from .models import Cart, TakenProduct
 from .utlities import open_stack
 
 
@@ -10,8 +10,8 @@ def stack_counter(request):
         try:
             stack = open_stack(request)
 
-            if request.user.is_authenticated:
-                items = TakenProduct.objects.all().filter(stack__belongs_to=request.user)
+            if request.author.is_authenticated:
+                items = TakenProduct.objects.all().filter(stack__belongs_to=request.author)
             else:
                 items = TakenProduct.objects.all().filter(stack=stack)
 

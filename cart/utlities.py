@@ -1,4 +1,4 @@
-from .models import Stack, TakenProduct
+from .models import Cart, TakenProduct
 
 
 # utilities in an app => are the methods (or classes, etc.) that are useful entirely in the project and are called from other apps too
@@ -11,35 +11,35 @@ def open_stack(request):
             request.session.save()
         stack_id = request.session.session_key or request.session.create()
 
-        if request.user.is_authenticated:
-            if Stack.objects.all():
-                merge_user_stacks(request.user)
-                current_stack = Stack.objects.filter(belongs_to=request.user)
+        if request.author.is_authenticated:
+            if Cart.objects.all():
+                merge_user_stacks(request.author)
+                current_stack = Cart.objects.filter(belongs_to=request.author)
                 # TEMP ***************
                 if not current_stack:
-                    raise Stack.DoesNotExist
+                    raise Cart.DoesNotExist
                 current_stack = current_stack[0]
             else:
-                raise Stack.DoesNotExist
+                raise Cart.DoesNotExist
 
         else:
-            current_stack = Stack.objects.get(sid=stack_id)  # recent opened stack
-            if request.user.is_authenticated:
-                current_stack.belongs_to = request.user
+            current_stack = Cart.objects.get(sid=stack_id)  # recent opened cart
+            if request.author.is_authenticated:
+                current_stack.owner = request.author
 
-    except Stack.DoesNotExist:
-        current_stack = Stack.objects.create(sid=stack_id, belongs_to=request.user if request.user.is_authenticated else None)
+    except Cart.DoesNotExist:
+        current_stack = Cart.objects.create(sid=stack_id, belongs_to=request.author if request.author.is_authenticated else None)
     return current_stack
 
 
 def attach_current_stack_to_current_user(request, user):
     try:
-        stack = Stack.objects.get(sid=open_stack(request).ID())
+        stack = Cart.objects.get(sid=open_stack(request).ID())
         if stack is not None:
-            stack.belongs_to = user
+            stack.owner = user
             stack.save()
     except:
-        print('no opened stack found to attach')
+        print('no opened cart found to attach')
 
 
 # # # CHECK THIS METHOD WORKS CORRECTLY
@@ -48,25 +48,25 @@ def attach_current_stack_to_current_user(request, user):
 def merge_user_stacks(user):  # temporary approach
     try:
         # find all stacks belonging to the same user
-        stacks_belonging_to_user = Stack.objects.filter(belongs_to=user)
+        stacks_belonging_to_user = Cart.objects.filter(belongs_to=user)
         # stacks_belonging_to_user.sort(key=lambda x: x.created)  # sort by creation date ==> want to take the oldest one and delete others
         merged_stack = stacks_belonging_to_user[0]
         merged_stack_taken_products = TakenProduct.objects.filter(stack=merged_stack)
 
-        if stacks_belonging_to_user and len(stacks_belonging_to_user) > 1:  # if umber of stack is one there's no need
+        if stacks_belonging_to_user and len(stacks_belonging_to_user) > 1:  # if umber of cart is one there's no need
             trash = []
             # removing stacks directly will change the size of the stacks_belonging_to_user, and causes trouble
             # so i save the un wanted stacks in 'trash' and after that delete the items of trash one by one
             for stack in stacks_belonging_to_user:
                 if stack.ID() != merged_stack.ID():
-                    if stack.belongs_to is None and stack.cost == 0 and stack.discounts < 100:
+                    if stack.owner is None and stack.worth == 0 and stack.discounts < 100:
                         trash.append(stack)
                     else:
                         products_taken_by_user = TakenProduct.objects.filter(stack=stack)
                         if products_taken_by_user:
                             for taken_product in products_taken_by_user:
                                 taken_is_duplicate = False
-                                # now check if there is a similar product with exact variation in the merged stack takens list
+                                # now check if there is a similar product with exact variation in the merged cart takens list
                                 # if so just add the quantity of this one to the merged one and then delete this duplicate one
                                 similar_products_in_merged_stack = merged_stack_taken_products.filter(product=taken_product.product)
                                 for possibly_duplicate in similar_products_in_merged_stack:
@@ -78,7 +78,7 @@ def merge_user_stacks(user):  # temporary approach
                                         break
 
                                 if not taken_is_duplicate:
-                                    taken_product.stack = merged_stack
+                                    taken_product.cart = merged_stack
                                     taken_product.save()
 
                         trash.append(stack)
@@ -86,6 +86,6 @@ def merge_user_stacks(user):  # temporary approach
                 stack.delete()
 
             # remove empty stacks:
-            Stack.objects.filter(belongs_to=None, cost=0).delete()
+            Cart.objects.filter(belongs_to=None, cost=0).delete()
     except Exception as ex:
         print('sth went wrong while trying to merge stacks: ' + ex.__str__())

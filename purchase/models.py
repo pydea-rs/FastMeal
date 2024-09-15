@@ -21,11 +21,10 @@ ORDER_STATUS = {
 
 
 class Receipt(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4, editable=False, verbose_name='آیدی')
     reference_id = models.CharField(max_length=30, verbose_name='کد رهیگیری')  # *** WHAT TO SET ON MAX_LENGTH ??
-    image = models.ImageField(upload_to='photos/transactions', blank=True, null=True, verbose_name='تصویر')
+    image = models.ImageField(upload_to='photos/transactions', blank=True, null=True, verbose_name='عکس رسید')
     amount = models.IntegerField(verbose_name="مقدار تراکنش")
-    order_key = models.CharField(max_length=20, verbose_name='شماره سفارش')  # this is the order checking code between seller and buyer
+    order_key = models.CharField(max_length=20, verbose_name='شماره سفارش')
 
     class Meta:
         verbose_name = 'رسید'
@@ -39,14 +38,14 @@ class Transaction(models.Model):
     METHODS = (('reserve', 'رزرو'),
               ('zarinpal', 'زرین پال'),
               ('bank_portal', 'درگاه پرداخت بانکی'))
-    id = models.UUIDField(primary_key=True, default=uuid4, editable=False, verbose_name='آیدی')
     VALIDATION_STATUS = (('pending', 'در دست بررسی'), ('valid', 'معتبر'), ('invalid', 'نامعتبر'))
     receipt = models.ForeignKey(Receipt, on_delete=models.CASCADE, blank=True, null=True, verbose_name='رسید')
-    validation = models.CharField(max_length=20, choices=VALIDATION_STATUS, default='pending', verbose_name='صحت تراکنش')
-
-    performer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='زدوبند کننده')
+    validation = models.CharField(max_length=20, choices=VALIDATION_STATUS,
+                                  default='pending', verbose_name='صحت تراکنش')
+    performer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='پرداخت کننده')
     method = models.CharField(max_length=20, blank=False, choices=METHODS, verbose_name='روش پرداخت')
-    date_created = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روزرسانی')
 
     class Meta:
         verbose_name = 'تراکنش'
@@ -58,7 +57,7 @@ class Transaction(models.Model):
 
 class OrderReceiver(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False, verbose_name='آیدی')
-    related_to = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر مربوطه')
+    user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر مربوطه')
     # order = models.ForeignKey(Order, on_delete=models.CASCADE)
     # receiver identification
     fname = models.CharField(max_length=30, blank=True, verbose_name='اسم')
@@ -103,35 +102,34 @@ class Order(models.Model):
               ('failed', ORDER_STATUS['failed']))
     # model connections
     # EDIT ON_DELETE s
-    key = models.CharField(max_length=20, verbose_name='شماره سفارش')  # this is the order checking code between seller and buyer
-    buyer = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name='مالک زدوبند')  # is it a good thing to remove records ?
+    key = models.CharField(max_length=20, verbose_name='شماره سفارش')
+    owner = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, verbose_name='مالک')
     transaction = models.ForeignKey(Transaction, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='تراکنش')
-    receiver = models.ForeignKey(OrderReceiver, on_delete=models.PROTECT, verbose_name='گیرنده')  # edit the on_delete
+    receiver = models.ForeignKey(OrderReceiver, on_delete=models.PROTECT, verbose_name='مشخصات گیرنده')  # edit the on_delete
 
     # optionals
-    notes = models.CharField(max_length=256, verbose_name="لحاظیات", blank=True, null=True)
+    notes = models.CharField(max_length=256, verbose_name="لحاظیات", blank=True, null=True, default='-')
 
     # stats
-    date_created = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
-    date_updated = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روزرسانی')
-    # is_certified = models.BooleanField(default=False)
-    # is_delivered = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روزرسانی')
     status = models.CharField(max_length=20, choices=STATUS, default='new', verbose_name='وضعیت')
 
     # prices and costs
-    cost = models.IntegerField(default=0, verbose_name='هزینه')  # total value (total price)
-    discounts = models.IntegerField(default=0, verbose_name='تخفیفی جات')  # sum of the amount of discounts in Money (not percentage)
+    cost = models.IntegerField(default=0, verbose_name='هزینه')
+    discounts = models.IntegerField(default=0, verbose_name='تخفیفی جات')  # FIXME: Update sections like this,
+    # by the Single Source of Truth Rule, convert these to class properties and calculate properly.
     shipping_cost = models.IntegerField(default=0, verbose_name='هزینه ارسال')
-    must_be_paid = models.IntegerField(default=0, verbose_name='هزینه نهایی')
+    final_cost = models.IntegerField(default=0, verbose_name='هزینه نهایی')
     seen = models.BooleanField(default=False, verbose_name='مشاهده توسط ادمین')
     whats_wrong = models.TextField(max_length=256, null=True, blank=True, verbose_name='علت رد سفارش')
 
     class Meta:
-        verbose_name = 'زدوبند'
-        verbose_name_plural = 'زدوبندها'
+        verbose_name = 'سفارش'
+        verbose_name_plural = 'سفارش ها'
 
     def how_much_to_pay(self):
-        self.must_be_paid = self.cost - self.discounts + self.shipping_cost
+        self.final_cost = self.cost - self.discounts + self.shipping_cost
 
     def __str__(self):
         return 'سفارشی به نام' + self.receiver.fullname()
@@ -155,7 +153,7 @@ class Order(models.Model):
 
     def sell_products(self):
         # apply order and update the product stocks and statistics in the inventory
-        ordered_products = PurchasedItem.objects.filter(order=self, buyer=self.buyer, )  # transaction=self.transaction
+        ordered_products = PurchasedItem.objects.filter(order=self, buyer=self.owner, )  # transaction=self.transaction
         for item in ordered_products:
             preferred_variations = item.variations.all()
             for preferred_variation in preferred_variations:
@@ -173,23 +171,18 @@ class PurchasedItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name='سفارش مربوطه')
     buyer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='مالک زدوبند')
 
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='کالا')  # match th item whit selected product
-    variation = models.ForeignKey(Variation, on_delete=models.CASCADE, verbose_name='گونه')
-
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, verbose_name='محصول')
+    variation = models.ForeignKey(Variation, on_delete=models.CASCADE, verbose_name='نوع')
     quantity = models.IntegerField(default=0, verbose_name='تعداد')
-#    color = models.CharField(max_length=20, verbose_name='رنگ')  # these two variation are defined separately are for direct access
-#    size = models.CharField(max_length=20, verbose_name='سایز')
-    cost = models.IntegerField(verbose_name='هزینه')  # final price for each product that is ordered ( considering the quantity and
-    # discount)
+    cost = models.IntegerField(verbose_name='هزینه')
 
     delivered = models.BooleanField(default=False, verbose_name='تحویل شده')
-    date_created = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
-    date_updated = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ به روزرسانی')
-    anything_wrong = models.CharField(max_length=50, blank=True, null=True, default="", verbose_name='مشکل پشکل؟')
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
+    updated_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ به روزرسانی')
 
     class Meta:
-        verbose_name = 'کالای زدوبندی'
-        verbose_name_plural = 'کالاهای زدوبندی'
+        verbose_name = 'آیتم سفارشی'
+        verbose_name_plural = 'آیتم های سفارشی'
 
     def __str__(self):
         return f'{self.product} - {self.variation} [{self.quantity}]'

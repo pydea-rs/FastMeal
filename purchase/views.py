@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect
-from stack.models import TakenProduct
+from cart.models import TakenProduct
 from .forms import OrderForm, ReserveTransactionForm
-from stack.utlities import open_stack
+from cart.utlities import open_stack
 from .models import Order, OrderReceiver, Transaction, PurchasedItem, Receipt
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
@@ -14,10 +14,10 @@ def finalize_order(request, order_key, method, status, reference_id=None, amount
         order = Order.objects.get(buyer=request.user, key=order_key)
         # order.how_much_to_pay()
         if order:
-            order.status = status.lower()
+            order.verified = status.lower()
             # now we ship the taken product items to ordered product items
             user_stack = open_stack(request)
-            user_stack.submit_bill()  # to make sure total products in the stack are billed successfully
+            user_stack.submit_bill()  # to make sure total products in the cart are billed successfully
             stack_items = TakenProduct.objects.filter(stack=user_stack)
             for item in stack_items:
                 purchased_item = PurchasedItem()
@@ -27,8 +27,8 @@ def finalize_order(request, order_key, method, status, reference_id=None, amount
                 purchased_item.product_id = item.product_id
                 # variations cannot be set like this, it must be set after .save() call
                 purchased_item.quantity = item.quantity
-                purchased_item.cost = item.total_price()
-                purchased_item.delivered = order.status == 'delivered'
+                purchased_item.cost = item.total_absolute_price()
+                purchased_item.delivered = order.verified == 'delivered'
                 # purchased_item.color = ...?
                 # purchased_item.size = ...?
                 purchased_item.variation = item.variation
@@ -56,7 +56,7 @@ def finalize_order(request, order_key, method, status, reference_id=None, amount
                     item.delete()  # *** CORRECT ???? ***
                 else:
                     purchased_item.anything_wrong = "تعداد درخواستی شما از این نوع کالا، بیشتر از موجودی انبار است."
-                    order.status = "failed"
+                    order.verified = "failed"
             order.save()
             user_stack.delete()
             return order
@@ -76,9 +76,9 @@ def submit_order(request):
 
         user = request.user
         user_stack = open_stack(request)
-        user_stack.submit_bill()  # to make sure total products in the stack are billed successfully
+        user_stack.submit_bill()  # to make sure total products in the cart are billed successfully
         stack_items = TakenProduct.objects.filter(stack=user_stack)
-        # use stack_items or add a quantity field to stack model?
+        # use stack_items or add a quantity field to cart model?
         if stack_items.count() <= 0:
             return redirect('store')
 
@@ -92,7 +92,7 @@ def submit_order(request):
                 except ObjectDoesNotExist:
                     order.receiver = OrderReceiver()
                     order.receiver.phone = form.cleaned_data['phone']
-                    order.receiver.related_to = user
+                    order.receiver.user = user
 
                 order.receiver.fname = form.cleaned_data['fname']
                 order.receiver.lname = form.cleaned_data['lname']
@@ -104,15 +104,15 @@ def submit_order(request):
                 order.receiver.save()
 
                 order.notes = form.cleaned_data['notes'] if 'notes' in form.cleaned_data and form.cleaned_data['notes'] else None
-                order.cost = user_stack.cost
+                order.cost = user_stack.worth
                 order.discounts = user_stack.discounts
                 order.shipping_cost = 50000  # this is for test; ask pouya about this
                 order.how_much_to_pay()  # calculate the cose and update the order.must_be_paid
                 # update the ip of the user again just to make sure
 
-                order.buyer = user
-                order.buyer.ip = request.META.get('REMOTE_ADDR')
-                order.buyer.save()
+                order.owner = user
+                order.owner.ip = request.META.get('REMOTE_ADDR')
+                order.owner.save()
                 order.save()  # save object and create id field for it (to use in keygen)
                 order.key = order.keygen()
                 order.save()  # call save for django to set the id primary key automatically
@@ -140,7 +140,7 @@ def preview(request):
 @login_required(login_url='login')
 def check_order(request, order_key):
     order = finalize_order(request=request, order_key=order_key, method='receipt', status='pending')
-    if order and order.status.lower() == "pending":
+    if order and order.verified.lower() == "pending":
         # now we send the user to transaction page
 
         return redirect(order.receipt_url())
@@ -156,7 +156,7 @@ def accept_order(request, order_key):
     try:
         order = Order.objects.get(key=order_key, buyer=request.user)
         if request.user and request.user.is_authenticated and order_key:
-            if order and order.status.lower() == "certified":
+            if order and order.verified.lower() == "certified":
                 order.sell_products()
                 #  saves automatically in function above
 

@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django import forms
 from .forms import RegisterForm, InputValidator
 from .models import User, Profile
-from stack.utlities import attach_current_stack_to_current_user, merge_user_stacks
+from cart.utlities import attach_current_stack_to_current_user, merge_user_stacks
 from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required
 from django.utils.http import urlsafe_base64_decode
@@ -10,6 +10,7 @@ from django.contrib.auth.tokens import default_token_generator
 from common.tools import MailingInterface
 import requests
 from common.exceptions import WaitAssholeException
+from datetime import datetime
 
 
 def register(request):
@@ -27,8 +28,8 @@ def register(request):
             profile.save()
             user.save()
             # send user verification email
-            MailingInterface.SendSignedMessage(request=request, user=user, target_email=email, subject='فعال سازی حساب کاربری',
-                                               template_name='user_verification')
+            MailingInterface.SendSignedMessage(request=request, user=user, target_email=email,
+                                               subject='فعال سازی حساب کاربری', template_name='user_verification')
 
             # messages.info(request, 'حسابت ساخته شد...حالا از طریقی ایمیلی که برات فرستادیم باید اکانتت رو فعال
             # کنی...')
@@ -52,7 +53,7 @@ def login(request):
                 user = auth.authenticate(email=contact, password=password)
 
             if user is None:  # wrong credentials
-                messages.error(request, 'متاسفانه آب قطعه!')
+                messages.error(request, 'مشخصات کاربری اشتباه است.')
                 return redirect('login')
             elif not user.is_activated:  # wrong credentials
                 messages.error(request, 'این اکانت هنوز فعال سازی نشده است. لطفا به ایمیل خود مراجعه کنید!')
@@ -61,9 +62,10 @@ def login(request):
                 attach_current_stack_to_current_user(request=request, user=user)  # must be exactly before auth.login
                 auth.login(request, user)
                 merge_user_stacks(user)
-                messages.success(request, 'دخول شما موفقیت آمیز بود.')
+                messages.success(request, 'ورود شما موفقیت آمیز بود.')
                 # get the current ip of the user every time
                 user.ip = request.META.get('REMOTE_ADDR')
+                user.last_login_at = datetime.now()
                 user.save()
                 # redirect to caller page
                 url = request.META.get('HTTP_REFERER')
@@ -114,7 +116,8 @@ def forgot_password(request):
                     messages.error(request=request, message='هیچ حساب کاربری با این ایمیل ثبت نشده.')
                 else:
                     # send password reset email:
-                    MailingInterface.SendSignedMessage(request=request, user=user, target_email=email, subject='بازیابی رمزشب', template_name='reset_password')
+                    MailingInterface.SendSignedMessage(request=request, user=user, target_email=email,
+                                                       subject='بازیابی رمزعبور', template_name='reset_password')
                     messages.info(request=request, message='ایمیل بازیابی رمزشب به آدرس بالا ارسال شد...')
                     return redirect('login')
             else:
@@ -136,12 +139,12 @@ def reset_password_permission(request, uidb64, token):
         # if user returned successfully
         if user is not None and default_token_generator.check_token(user, token):
             request.session['uid'] = uid
-            messages.success(request, 'حالا می تونی یه رمزشب نو واسه ی خودت انتخاب کنی.')
+            messages.success(request, 'حالا می تونی رمزعبور جدید تنظیم کنی.')
             return redirect('reset_password')
     except(ValueError, TypeError, OverflowError, User.DoesNotExist):
         user = None
     # if sth went wrong
-    messages.error(request, 'لینک بازیابی رمزشب دیگر معتبر نیست!')
+    messages.error(request, 'لینک بازیابی رمزعبور دیگه معتبر نیست!')
     return redirect('forgot_password')
 
 
@@ -159,18 +162,18 @@ def reset_password(request):
                 if user is not None:
                     user.set_password(password)
                     user.save()
-                    messages.success(request=request, message='رمزشب شما با موفقیت تغییر داده شد!')
+                    messages.success(request=request, message='رمزعبور شما با موفقیت تغییر داده شد!')
                     return redirect('login')
                 else:
                     messages.warning(request=request, message='حساب کاربری یافت نشد... لطفا دوباره تلاش کن!')
                     return redirect('login')
             else:
-                messages.warning(request=request, message='رمزشب باید با تکرارش مطابقت کامل داشته باشد!')
+                messages.warning(request=request, message='رمزعبور باید با تکرارش مطابقت کامل داشته باشه!')
                 return redirect('reset_password')
         except forms.ValidationError as ex:
             messages.warning(request=request, message=ex.message)
             return redirect('reset_password')
         except:
-            messages.warning(request=request, message='خطای نامشخصی رخ داده است... لطفا از نو تلاش کنید!')
+            messages.warning(request=request, message='خطای نامشخصی پیش اومد... لطفا از نو تلاش کن!')
             return redirect('reset_password')
     return render(request, 'user/reset_password_form.html')
