@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Transaction, Order, PurchasedItem, OrderReceiver, Receipt
+from .models import Transaction, Order, PurchasedItem, DeliveryInfo, Receipt
 from django.shortcuts import get_object_or_404
 from django.contrib import messages
 from django.shortcuts import redirect
@@ -16,8 +16,8 @@ class PurchasedItemInline(admin.TabularInline):
     extra = 0
 
 
-class OrderReceiverInline(admin.TabularInline):
-    model = OrderReceiver
+class DeliveryInfoInline(admin.TabularInline):
+    model = DeliveryInfo
     readonly_fields = ('user', 'fname', 'lname', 'province', 'city', 'phone', 'address', 'postal_code')
     extra = 0
 
@@ -28,7 +28,7 @@ class OrderAdminPanel(admin.ModelAdmin):
     list_filter = ('status', 'seen',)
     search_fields = ('key', 'receiver__fname', 'receiver__lname', 'owner__fname', 'owner__lname', 'status')
     list_per_page = 20
-    inlines = (PurchasedItemInline,)  # OrderReceiverInline)
+    inlines = (PurchasedItemInline,) 
     change_form_template = "personalization/order_admin_template.html"
 
     def change_view(self, request, object_id, form_url='', extra_context=None):
@@ -115,10 +115,10 @@ class PurchasedItemAdminPanel(admin.ModelAdmin):
     list_per_page = 20
 
 
-class OrderReceiverAdminPanel(admin.ModelAdmin):
-    list_display = ('phone', 'fname', 'lname', 'province', 'city')
-    list_filter = ('province', 'city')
-    search_fields = ('phone', 'fname', 'lname', 'province', 'city', 'postal_code', 'address')
+class DeliveryInfoAdminPanel(admin.ModelAdmin):
+    list_display = ('name', 'phone',  'location')
+    list_filter = ('phone', 'location', 'name')
+    search_fields = ('phone',  'location', 'notes')
     list_per_page = 20
 
 
@@ -145,4 +145,4 @@ admin.site.register(Receipt, ReceiptAdminPanel)
 admin.site.register(Transaction, TransactionAdminPanel)
 admin.site.register(Order, OrderAdminPanel)
 admin.site.register(PurchasedItem, PurchasedItemAdminPanel)
-admin.site.register(OrderReceiver, OrderReceiverAdminPanel)
+admin.site.register(DeliveryInfo, DeliveryInfoAdminPanel) # TODO: not used for now.

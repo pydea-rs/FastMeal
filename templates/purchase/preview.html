@@ -12,18 +12,19 @@
                         مشخصات گیرنده سفارش
                       </div>
                       <div class="card-body">
-                        <p>این سفارش برای
+                        <p>این سفارش توسط
                          <mark>{{ order.receiver.fullname }}</mark>
-                          ساکن در
-                        <mark>{{ order.receiver.full_address }}</mark>
-                        و شماره تماس
+                          ثبت شده و به لوکیشن
+                        <mark>{{ order.receiver.location }}</mark>
+                        تحویل می شود.
+                        و شماره تما در دسترس سفارش دهنده
                          <mark class="p-2">{{ order.receiver.phone }}</mark>
                           ارسال میشه.
                         </p>
                       {% if order.notes %}
                             <p>
-                            <mark>توجه:</mark>
-                            {{ order.notes }}
+                            <mark>ملاحضات:</mark>
+                            {{ order.receiver.notes }}
                             </p>
                       {% endif %}
                       </div>

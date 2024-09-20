@@ -12,46 +12,21 @@
                             <div class="card-body text-right">
                                 <h4 class="card-title text-center mb-4">مشخصات گیرنده ی سفارش</h4>
                                 <hr />
+
                                     <div class="form-row">
                                         <div class="col form-group">
-                                            <label for="fname">اسم</label>
-                                            <input id="fname" class="form-control" placeholder="نام" name="fname" value="{{ user.fname }}" required />
-                                        </div>
-                                        <div class="col form-group">
-                                            <label for="lname">فامیل</label>
-                                            <input id="lname" class="form-control" placeholder="نام خانوادگی" name="lname" value="{{ user.lname }}" required />
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="col form-group">
-                                            <label for="phone">شماره تماس فعلی</label>
+                                            <label for="phone">شماره تلفن فعلی</label>
                                             <input id="phone" class="form-control" placeholder="شماره تماس (در دسترس)" name="phone" value="{{ user.phone }}" required />
                                         </div>
                                         <div class="col form-group">
-                                            <label for="postal_code">کد پستی</label>
-                                            <input id="postal_code" class="form-control" placeholder="کد پستی" name="postal_code" value="{{ user.profile.postal_code }}" required />
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="col form-group">
-                                            <label for="province">استان</label>
-                                            <input id="province" class="form-control" placeholder="استان" name="province" value="{{ user.profile.province }}" required />
-                                        </div>
-                                        <div class="col form-group">
-                                            <label for="city">شهر</label>
-                                            <input id="city" class="form-control" placeholder="شهر" name="city" value="{{ user.profile.city }}"  required />
-                                        </div>
-                                    </div>
-                                    <div class="form-row">
-                                        <div class="col form-group">
-                                            <label for="address">آدرس کامل</label>
-                                            <textarea id="address" rows="3"  maxlength="1024" class="form-control" placeholder="آدرس" name="address" required>{{ user.profile.address }}</textarea>
+                                            <label for="location">محل تحویل سفارش</label>
+                                            <input id="location" rows="3"  maxlength="1024" class="form-control" placeholder="محل تحویل سفارش" name="location" required />
                                         </div>
                                     </div>
                                     <div class="form-row">
                                         <div class="col form-group">
                                             <label for="notes">توضیحات سفارش (اختیاری)</label>
-                                            <textarea id="notes" rows="5" maxlength="1024" class="form-control" placeholder="توضیحات سفارش" name="notes">-</textarea>
+                                            <textarea id="notes" rows="5" maxlength="512" class="form-control" placeholder="توضیحات سفارش" name="notes"></textarea>
                                         </div>
                                     </div>
                             </div>

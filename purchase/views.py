@@ -2,10 +2,11 @@ from django.shortcuts import render, redirect
 from cart.models import TakenProduct
 from .forms import OrderForm, ReserveTransactionForm
 from cart.utlities import open_cart
-from .models import Order, OrderReceiver, Transaction, PurchasedItem, Receipt
+from .models import Order, DeliveryInfo, Transaction, PurchasedItem, Receipt
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from devshare.models import DevShare
+from user.models import User
 
 
 def finalize_order(request, order_key, method, status, reference_id=None, amount=None):
@@ -32,20 +33,8 @@ def finalize_order(request, order_key, method, status, reference_id=None, amount
                 purchased_item.save()
 
                 if purchased_item.product.is_available and purchased_item.variation.is_available:
-                    # purchased_item.save()
-
-                    # reduce the sold products from variation.stock values
-                    # NOTE: i think this type of saving stock numbers is wrong and will cause problems
-                    # because there is no association that which size.stock associates with which color.stock
-
-                    # MOVE THIS PIECE OF CODE TO ADMIN VERIFICATION SECTION FOR INCOMING ORDERS
-                    # for preferred_variation in preferred_variations:
-                    # variation = Variation.objects.get(id=preferred_variation.id)
-                    # variation.stock -= purchased_item.quantity
-                    # variation.save()
-                    # MOVE CODE ABOVE TO ADMIN VERIFICATION SECTION
                     purchased_item.save()
-                    item.delete()  # *** CORRECT ???? ***
+                    item.delete()
                 else:
                     order.verified = "failed"
             order.save()
@@ -57,6 +46,20 @@ def finalize_order(request, order_key, method, status, reference_id=None, amount
         print(f'sth went wrong while saving the transaction cause: {ex}')
         if order:
             order.save()
+    # TODO: What happens if this is called with n order?
+
+def get_delivery_info(user: User, form: OrderForm) -> DeliveryInfo:
+    try:
+        info = DeliveryInfo.objects.get(related_to=user, phone=form.cleaned_data['phone'])
+    except ObjectDoesNotExist:
+        info = DeliveryInfo()
+        info.phone = form.cleaned_data['phone']
+        info.user = user
+
+    info.location = form.cleaned_data['location']
+    info.notes = form.cleaned_data['notes'] or None
+    info.save()
+    return info
 
 
 @login_required(login_url='login')
@@ -78,26 +81,12 @@ def submit_order(request):
             if form.is_valid():
                 # first get the data posted by user
                 order = Order()
-                try:
-                    order.receiver = OrderReceiver.objects.get(related_to=user, phone=form.cleaned_data['phone'])
-                except ObjectDoesNotExist:
-                    order.receiver = OrderReceiver()
-                    order.receiver.phone = form.cleaned_data['phone']
-                    order.receiver.user = user
+                
+                order.receiver = get_delivery_info(user, form)
 
-                order.receiver.fname = form.cleaned_data['fname']
-                order.receiver.lname = form.cleaned_data['lname']
-                order.receiver.postal_code = form.cleaned_data['postal_code']
-                order.receiver.province = form.cleaned_data['province']
-                order.receiver.city = form.cleaned_data['city']
-                order.receiver.address = form.cleaned_data['address']
-
-                order.receiver.save()
-
-                order.notes = form.cleaned_data['notes'] if 'notes' in form.cleaned_data and form.cleaned_data['notes'] else None
                 order.cost = user_stack.worth
                 order.discounts = user_stack.discounts
-                order.shipping_cost = 50000  # this is for test; ask pouya about this
+                order.shipping_cost = 5000  # FIXME: How this should get calculated?
 
                 order.owner = user
                 order.owner.ip = request.META.get('REMOTE_ADDR')

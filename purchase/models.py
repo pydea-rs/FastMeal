@@ -16,7 +16,7 @@ ORDER_STATUS = {
     'not_sent': 'عدم ارسال',
     'undelivered': 'عدم تحویل',
     'canceled': 'داستان',
-    'failed': 'قطعی آب'
+    'failed': 'ناموفق'
 }
 
 
@@ -55,38 +55,30 @@ class Transaction(models.Model):
         return self.receipt.__str__() if self.receipt.__str__() else "Uncertified"
 
 
-class OrderReceiver(models.Model):
+class DeliveryInfo(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid4, editable=False, verbose_name='آیدی')
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر مربوطه')
-    # order = models.ForeignKey(Order, on_delete=models.CASCADE)
-    # receiver identification
-    fname = models.CharField(max_length=30, blank=True, verbose_name='اسم')
-    lname = models.CharField(max_length=30, blank=True, verbose_name='فامیلی')
-    phone = models.CharField(max_length=11, blank=True, verbose_name='تیلیف')
-    # receiver address
-    postal_code = models.CharField(max_length=10, verbose_name="کد پستی", blank=False)
-    province = models.CharField(max_length=30, verbose_name="استان", blank=False)
-    city = models.CharField(max_length=30, verbose_name="شهرستان", blank=False)
-    address = models.TextField(max_length=256, verbose_name="نشونی", blank=False)
 
+    location = models.CharField(max_length=256, verbose_name="محل تحویل", blank=False)
+
+    phone = models.CharField(max_length=11, verbose_name='شماره تماس دوم', blank=True)
+
+    notes = models.CharField(max_length=512, verbose_name="ملاحضات", blank=True, null=True, default=None) 
     class Meta:
-        verbose_name = 'گیرنده سفارش'
-        verbose_name_plural = 'گیرنده های سفارش'
-
-    def fullname(self):
-        return f'{self.fname} {self.lname}'
+        verbose_name = 'اطلاعات تحویل گیرنده'
+        verbose_name_plural = 'اطلاعات تحویل گیرنده'
 
     def __str__(self):
-        return self.fullname()
+        return self.user.__str__()
 
-    def full_address(self):
-        return f'{self.province} - {self.city} - {self.address}'
-
+    @property    
+    def name(self):
+        return self.user.__str__()
 
 class Order(models.Model):
     # order possible status
 
-    STATUS = (('new', ORDER_STATUS['new']),
+    STATUS = (('new', ORDER_STATUS['new']), # FIXME: Arrange all these status, only use some
               ('pending', ORDER_STATUS['pending']),
               ('verified', ORDER_STATUS['verified']),
               ('indebt', ORDER_STATUS['indebt']),
@@ -105,20 +97,15 @@ class Order(models.Model):
     key = models.CharField(max_length=20, verbose_name='شماره سفارش')
     owner = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, verbose_name='مالک')
     transaction = models.ForeignKey(Transaction, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='تراکنش')
-    receiver = models.ForeignKey(OrderReceiver, on_delete=models.PROTECT, verbose_name='مشخصات گیرنده')
 
-    # optionals
-    notes = models.CharField(max_length=256, verbose_name="لحاظیات", blank=True, null=True, default='-')
+    receiver = models.ForeignKey(DeliveryInfo, on_delete=models.PROTECT, verbose_name='مشخصات گیرنده', default=None) 
 
-    # stats
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد')
     updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روزرسانی')
     status = models.CharField(max_length=20, choices=STATUS, default='new', verbose_name='وضعیت')
 
-    # prices and costs
     cost = models.IntegerField(default=0, verbose_name='هزینه')
-    discounts = models.IntegerField(default=0, verbose_name='تخفیفی جات')  # FIXME: Update sections like this,
-    # by the Single Source of Truth Rule, convert these to class properties and calculate properly.
+    discounts = models.IntegerField(default=0, verbose_name='تخفیفی جات')
     shipping_cost = models.IntegerField(default=0, verbose_name='هزینه ارسال')
     seen = models.BooleanField(default=False, verbose_name='مشاهده توسط ادمین')
     whats_wrong = models.TextField(max_length=256, null=True, blank=True, verbose_name='علت رد سفارش')

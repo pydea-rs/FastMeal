@@ -1,24 +1,16 @@
 from django import forms
-from .models import OrderReceiver, Receipt
+from .models import DeliveryInfo, Receipt
 
 
 class OrderForm(forms.ModelForm):
     notes = forms.CharField(widget=forms.Textarea())
 
     class Meta:
-        model = OrderReceiver
-        fields = ['fname', 'lname', 'phone', 'province', 'city', 'address', 'postal_code']
+        model = DeliveryInfo
+        fields = ['location', 'phone', 'notes']
 
     def __init__(self, *args, **kwargs):
         super(OrderForm, self).__init__(*args, **kwargs)
-
-    # this method is for data validation, wrong account data will raise errors
-    def clean(self):
-        # get sent form's data to start checking
-        cleaned_data = super(OrderForm, self).clean()
-        print('OrderForm clean method has been called')
-        # InputValidator.full(cleaned_data)
-
 
 class ReserveTransactionForm(forms.ModelForm):
 
