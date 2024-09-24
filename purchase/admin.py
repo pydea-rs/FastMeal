@@ -18,12 +18,12 @@ class PurchasedItemInline(admin.TabularInline):
 
 class DeliveryInfoInline(admin.TabularInline):
     model = DeliveryInfo
-    readonly_fields = ('user', 'fname', 'lname', 'province', 'city', 'phone', 'address', 'postal_code')
+    readonly_fields = ('user', 'location', 'phone', 'notes')
     extra = 0
 
 
 class OrderAdminPanel(admin.ModelAdmin):
-    list_display = ('key', 'buyer', 'status', 'seen',)
+    list_display = ('key', 'owner', 'status', 'seen',)
     list_editable = ('status',)
     list_filter = ('status', 'seen',)
     search_fields = ('key', 'receiver__fname', 'receiver__lname', 'owner__fname', 'owner__lname', 'status')
@@ -116,9 +116,9 @@ class PurchasedItemAdminPanel(admin.ModelAdmin):
 
 
 class DeliveryInfoAdminPanel(admin.ModelAdmin):
-    list_display = ('name', 'phone',  'location')
-    list_filter = ('phone', 'location', 'name')
-    search_fields = ('phone',  'location', 'notes')
+    list_display = ('user__fname', 'user__lname', 'phone',  'location')
+    list_filter = ('location', )
+    search_fields = ('phone',  'location', 'notes', 'name')
     list_per_page = 20
 
 

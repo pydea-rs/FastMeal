@@ -27,7 +27,9 @@
     <section class="header-main border-bottom">
         <div class="container" >
             <div id="navigation-box" class="row align-items-center" style="height:150vh; background: url({% static 'images/logo.png' %}) no-repeat center center ;">
-                <a href="/" class="btn btn-primary-light mx-auto col-5 col-lg col-sm col-md flex-grow-0"> خونه</a>
+                {% if request.path != '/' %}
+                    <a href="/" class="btn btn-primary-light mx-auto col-5 col-lg col-sm col-md flex-grow-0"> خونه</a>
+                {% endif %}
                 <div id="category-button" class=" col-5 col-lg col-sm col-md mx-auto flex-grow-0 w-100">
                     <div  dir="ltr" class="category-wrap dropdown d-block float-right w-100">
                         <button type="button" style="font-weight: bold" class="btn btn-outline-danger dropdown-toggle px-3 w-100" data-toggle="dropdown">
@@ -43,7 +45,6 @@
                         </div>
                     </div>  <!-- category-wrap.// -->
                 </div> <!-- col.// -->
-                <a href="{% url 'store' %}" class="btn btn-success mx-auto col-5 col-lg col-sm col-md flex-grow-0" >فروشگاه</a>
                 <div class="mt-3 col-lg col-md-6 col-sm-12 col-12 col">
                     <form action="{% url 'search' %}" method="post" class="search">
                         {% csrf_token %}
@@ -65,15 +66,15 @@
                     <div class="d-flex justify-content-end mb-3 mb-lg-0">
                         <div class="text-right widget-header">
                             {% if user.ID is None %}
-                                <small class="title text-info">سلام فیلی</small>
+                                <small class="title text-info">سلام</small>
                                 <div>
                                     <a class="text-warning profile-summary" href="{% url 'login' %}">ورود</a> <span class="dark-transp"> | </span>
-                                    <a class="text-success profile-summary" href="{% url 'register' %}">نوم نویسی</a>
+                                    <a class="text-success profile-summary" href="{% url 'register' %}">ثبت نام</a>
                                 </div>
                             {% else %}
                                 <small class="title text-info">سلام {{user.fname}} {{user.lname}}</small>
                                 <div>
-                                    <a class="text-info profile-summary" href="{% url 'user-dashboard' %}" >داشبرد</a> <span class="dark-transp"> | </span>
+                                    <a class="text-info profile-summary" href="{% url 'user-dashboard' %}" >پروفایل</a> <span class="dark-transp"> | </span>
                                     <a class="text-danger profile-summary" href="{% url 'logout' %}">خروج</a>
                                 </div>
                             {% endif %}

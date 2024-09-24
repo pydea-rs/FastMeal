@@ -2,7 +2,6 @@ from django.db import models
 import datetime
 from store.models import Variation, Product
 from user.models import User
-from uuid import uuid4
 from django.urls import reverse
 
 ORDER_STATUS = {
@@ -56,14 +55,11 @@ class Transaction(models.Model):
 
 
 class DeliveryInfo(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4, editable=False, verbose_name='آیدی')
     user = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='کاربر مربوطه')
-
     location = models.CharField(max_length=256, verbose_name="محل تحویل", blank=False)
-
     phone = models.CharField(max_length=11, verbose_name='شماره تماس دوم', blank=True)
+    notes = models.CharField(max_length=512, verbose_name="ملاحضات", blank=True, null=True, default=None)
 
-    notes = models.CharField(max_length=512, verbose_name="ملاحضات", blank=True, null=True, default=None) 
     class Meta:
         verbose_name = 'اطلاعات تحویل گیرنده'
         verbose_name_plural = 'اطلاعات تحویل گیرنده'
@@ -74,6 +70,7 @@ class DeliveryInfo(models.Model):
     @property    
     def name(self):
         return self.user.__str__()
+
 
 class Order(models.Model):
     # order possible status
@@ -95,7 +92,7 @@ class Order(models.Model):
     # model connections
     # EDIT ON_DELETE s
     key = models.CharField(max_length=20, verbose_name='شماره سفارش')
-    owner = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, verbose_name='مالک')
+    owner = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, verbose_name='صاحب سفارش')
     transaction = models.ForeignKey(Transaction, on_delete=models.SET_NULL, null=True, blank=True, verbose_name='تراکنش')
 
     receiver = models.ForeignKey(DeliveryInfo, on_delete=models.PROTECT, verbose_name='مشخصات گیرنده', default=None) 
@@ -119,7 +116,7 @@ class Order(models.Model):
         return self.cost - self.discounts + self.shipping_cost
 
     def __str__(self):
-        return 'سفارشی به نام' + self.receiver.fullname()
+        return 'سفارشی به نام' + self.receiver.name
 
     def check_url(self):
         return reverse('check_order', args=[self.key])
@@ -154,7 +151,6 @@ class Order(models.Model):
 
 
 class PurchasedItem(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid4, editable=False, verbose_name='آیدی')
     order = models.ForeignKey(Order, on_delete=models.CASCADE, verbose_name='سفارش مربوطه')
     buyer = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='مالک زدوبند')
 

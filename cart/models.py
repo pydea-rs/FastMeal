@@ -1,4 +1,3 @@
-import uuid
 from store.models import Product, Variation
 from django.db import models
 from user.models import User

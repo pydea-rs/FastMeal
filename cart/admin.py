@@ -17,7 +17,7 @@ class TakenProductInline(admin.TabularInline):
 
 
 class CartAdminPanel(admin.ModelAdmin):
-    list_display = ('sid', 'owner', 'cost', 'created_at')
+    list_display = ('sid', 'owner', 'worth', 'created_at')
     readonly_fields = ('sid', 'created_at', 'updated_at')
     search_fields = ('sid', 'owner__fname', 'owner__lname', 'cost')
     inlines = (TakenProductInline, )

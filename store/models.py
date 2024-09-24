@@ -2,7 +2,6 @@ from os.path import join
 from django.db import models
 from category.models import Category
 from django.urls import reverse
-import uuid
 from user.models import User
 from django.db.models import Avg, Count
 from restaurant.models import Restaurant
@@ -79,8 +78,6 @@ class VariationManager(models.Manager):
 
 
 class Variation(models.Model):
-    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-
     class Meta:
         verbose_name = "نوع محصول"
         verbose_name_plural = "انواع محصول"
@@ -97,6 +94,9 @@ class Variation(models.Model):
 
     def restaurant_name(self):
         return self.product.restaurant.name_fa
+
+    def product_name(self):
+        return self.product.name_fa
 
     def ID(self):
         return self.id

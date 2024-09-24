@@ -23,10 +23,10 @@ class ProductAdminPanel(admin.ModelAdmin):
 
 # ،TODO: add inline variations below product panel
 class VariationAdminPanel(admin.ModelAdmin):
-    list_display = ('product', 'restaurant_name', 'size', 'color',)
-    list_editable = ('is_available', 'stock',)
-    list_filter = ('is_available', 'size', 'color', 'stock',)
-    search_fields = ('size', 'color', 'product__name', 'product__name_fa')
+    list_display = ('product_name', 'name', 'restaurant_name', 'price', 'is_available')
+    list_editable = ('is_available', 'price',)
+    list_filter = ('is_available', 'name', )
+    search_fields = ('name', 'product__name', 'product__name_fa')
     readonly_fields = ('created_at', 'updated_at',)
 
 
