@@ -1,19 +1,25 @@
 from django.shortcuts import render, redirect
 from store.models import Product, Review
+from restaurant.models import Restaurant
 from django.db.models import Q
 from django.contrib import messages
+from typing import List, Dict
+
+
+class FeedSection:
+    def __init__(self, restaurant: Restaurant, products: List[Product]):
+        self.restaurant = restaurant
+        self.products = products
 
 
 def home(request):
-    popular_products = Product.objects.all().filter(is_available=True).order_by('-created_at')[:10]
-    reviews = None
-    for product in popular_products:
-        reviews = Review.objects.filter(product_id=product.id, status=True)
+    restaurants = Restaurant.objects.filter().order_by('-created_at')  # Order by rating.
+    feed: List[FeedSection] = list(map(
+        lambda restaurant: FeedSection(restaurant, Product.objects.filter(restaurant_id=restaurant.id, is_available=True).order_by('-created_at')[:10]),
+        restaurants))
 
     context = {
-        'popular_products': popular_products,
-        'reviews': reviews,
-        'title': 'رستوران اول'
+        'feed': feed,
     }
     return render(request, 'index.html', context)
 
@@ -22,17 +28,20 @@ def search(request):
     try:
         if request.method == 'POST':
             search_text = request.POST['search_text'].lower()
-            desired_products = Product.objects.filter(Q(name__icontains=search_text) | Q(name_fa__icontains=search_text))
-            reviews = None
-            for pdt in desired_products:
-                reviews = Review.objects.filter(product_id=pdt.id, status=True)
-
+            desired_products = Product.objects.filter(
+                Q(name__icontains=search_text) | Q(name_fa__icontains=search_text)
+            )
+            restaurants = set(map(lambda product: product.restaurant, desired_products))
+            search_feed = list(
+                map(
+                    lambda rest: FeedSection(rest, list(filter(lambda p: p.restaurant.id == rest.id, desired_products))),
+                    restaurants
+                )
+            )
             context = {
-                'popular_products': desired_products,
-                'reviews': reviews,
-                'page_title': 'نتایج'
+                'feed': search_feed,
             }
             return render(request, 'index.html', context)
     except:
-        messages.error(request, "مشکلی در روند جستجو اتفاق افتاد. دوباره زور بزن ...")
+        messages.error(request, "مشکلی در روند جستجو اتفاق افتاد. لطفا دوباره تلاش کنید ...")
     return redirect(request.META.get('HTTP_REFERER'))
