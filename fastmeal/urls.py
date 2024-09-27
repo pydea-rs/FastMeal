@@ -8,7 +8,7 @@ from django.views.static import serve
 
 urlpatterns = [
     path('admin/', include('admin_honeypot.urls', namespace='honey_admin')),
-    path('submax/', admin.site.urls, name='real_admin'),
+    path('panel/', admin.site.urls, name='real_admin'),
     path('', views.home, name="home"),
     path('store/', include('store.urls')),
     path('cart/', include('cart.urls')),

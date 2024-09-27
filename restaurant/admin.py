@@ -11,6 +11,7 @@ class RestaurantAdminPanel(admin.ModelAdmin):
     list_display = ('name_fa', 'owner')
     list_filter = ('owner', )
     search_fields = ('name', 'name_fa', 'owner', 'location')
+    readonly_fields = ('slug', )
     inlines = (RestaurantGalleryInlinePanel,)
 
 

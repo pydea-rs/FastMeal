@@ -1,23 +1,26 @@
-from os.path import join
 from django.db import models
 from category.models import Category
 from django.urls import reverse
 from user.models import User
 from django.db.models import Avg, Count
 from restaurant.models import Restaurant
+from django.dispatch import receiver
+from django.utils.text import slugify
+from django.db.models.signals import pre_save
 
 
 class Product(models.Model):
-    name = models.CharField(max_length=128, unique=True, blank=False, verbose_name="نام (انگلیسی)")
-    name_fa = models.CharField(max_length=128, unique=True, blank=False, verbose_name="نام (فارسی)")
-    slug = models.SlugField(max_length=128, unique=True, verbose_name="نام صفحه (خودکار)")
+    name = models.CharField(max_length=256, blank=False, verbose_name="نام (انگلیسی)")
+    name_fa = models.CharField(max_length=256, blank=False, verbose_name="نام")
+    slug = models.SlugField(max_length=600, unique=True)
     content = models.TextField(max_length=256, blank=True, verbose_name="محتویات")
     price = models.IntegerField(verbose_name="قیمت پایه")
     is_available = models.BooleanField(default=True, verbose_name="در دسترس بودن")
     discount = models.IntegerField(default=0, verbose_name="تخفیف")
     category = models.ForeignKey(Category, on_delete=models.DO_NOTHING, verbose_name="دسته بندی")
     image = models.ImageField(upload_to='photos/food', verbose_name="تصویر")
-    restaurant = models.ForeignKey(Restaurant, on_delete=models.DO_NOTHING, blank=False, null=False)
+    restaurant = models.ForeignKey(Restaurant, on_delete=models.DO_NOTHING, blank=False,
+                                   null=False, verbose_name='رستوران')
 
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد مشخصات")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به روزرسانی مشخصات")
@@ -92,12 +95,15 @@ class Variation(models.Model):
     objects = VariationManager()
     price = models.IntegerField(verbose_name="قیمت")
 
+    @property
     def restaurant_name(self):
         return self.product.restaurant.name_fa
 
+    @property
     def product_name(self):
         return self.product.name_fa
 
+    @property
     def ID(self):
         return self.id
 
@@ -128,8 +134,17 @@ class Review(models.Model):
     updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به روزرسانی نظز")
 
     class Meta:
-        verbose_name = 'فیلان بیسار'
-        verbose_name_plural = 'فیلان ها و بیسارها'
+        verbose_name = 'نظر کاربر'
+        verbose_name_plural = 'نظرات کاربران'
 
     def __str__(self):
         return f'{self.author.fname}: {self.comment}'
+
+
+# Special functions
+@receiver(pre_save, sender=Product)
+def prepopulate_slug(sender, instance, **kwargs):
+    if not instance.slug:
+        slug = slugify(f"{instance.name}-{instance.restaurant.slug}")
+        existing = Product.objects.filter(slug__icontains=slug).count()
+        instance.slug = slug if not existing else f'{slug}-{existing+1}'

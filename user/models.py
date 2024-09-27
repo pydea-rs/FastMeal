@@ -33,11 +33,11 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    fname = models.CharField(max_length=30, verbose_name="اسم")
-    lname = models.CharField(max_length=30, verbose_name="فامیل")
+    fname = models.CharField(max_length=30, verbose_name="نام")
+    lname = models.CharField(max_length=30, verbose_name="نام خانوادگی")
     # login field is phone number or email
-    phone = models.CharField(max_length=11, unique=True, verbose_name="تیلیف")
-    email = models.CharField(max_length=100, unique=True, verbose_name="نومه")
+    phone = models.CharField(max_length=11, unique=True, verbose_name="شماره موبایل")
+    email = models.CharField(max_length=100, unique=True, verbose_name="ایمیل")
     ip = models.CharField(max_length=20, blank=True, verbose_name="IP")
 
     is_activated = models.BooleanField(default=False, verbose_name="فعال بودی اکانت")
@@ -66,19 +66,19 @@ class User(AbstractBaseUser):
         return self.is_superuser
 
     class Meta:
-        verbose_name = "فیلی"
-        verbose_name_plural = "فیلی ها"
+        verbose_name = "کاربر"
+        verbose_name_plural = "کاربرها"
 
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE, verbose_name="کاربر")
     avatar = models.ImageField(blank=True, upload_to='photos/avatars/', null=True)
     last_email_sent_at = models.DateTimeField(default=None, blank=True, null=True)
-    debt = models.IntegerField(default=0, verbose_name='بدهی شما')
+    debt = models.IntegerField(default=0, verbose_name='بدهی')
     postal_code = models.CharField(max_length=10, verbose_name="کدپستی", blank=True)
     province = models.CharField(max_length=30, verbose_name="استان", blank=True)
     city = models.CharField(max_length=30, verbose_name="شهرستان", blank=True)
-    address = models.TextField(max_length=64, verbose_name="نشونی", blank=True)
+    address = models.TextField(max_length=64, verbose_name="آدرس", blank=True)
     updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به روزرسانی")
 
     def __str__(self):

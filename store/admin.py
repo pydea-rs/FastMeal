@@ -12,9 +12,8 @@ class GalleryInlinePanel(admin.TabularInline):
 class ProductAdminPanel(admin.ModelAdmin):
     list_display = ('name', 'category', 'restaurant', 'is_available',)
     list_editable = ('is_available',)
-    prepopulated_fields = {'slug': ('name',)}
     list_filter = ('category', 'is_available', 'restaurant', 'discount',)
-    readonly_fields = ('created_at', 'updated_at',)
+    readonly_fields = ('created_at', 'updated_at', 'slug')
     search_fields = (
         'name', 'name_fa', 'category', 'content', 'restaurant__name', 'restaurant__name_fa', 'price', 'created_at',
     )

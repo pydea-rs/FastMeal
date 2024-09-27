@@ -76,11 +76,13 @@ def post_review(request, product_id):
     if request.user.is_authenticated:
         if request.method == 'POST':
             try:
+                # ّFIXME: This is a little idiotic i think
+                #  , i think its better user be able to put multiple comments on each product
                 old_review = Review.objects.get(user__id=request.user.id, product__id=product_id)
                 form = ReviewForm(request.POST, instance=old_review)  # instance=review parameter will prevent from
                 # django from creating new review, and it will replace existing one
                 form.save()
-                messages.info(request, "نظر قبلی شما به روز رسانی شد.")
+                messages.info(request, "نظر شما در باره این آیتم به روز رسانی شد.")
             except Review.DoesNotExist:
                 form = ReviewForm(request.POST)
                 if form.is_valid():
@@ -95,7 +97,7 @@ def post_review(request, product_id):
                     except Product.DoesNotExist:
                         messages.error(request, 'شما در حال نظر دادن در رابطه با کالایی هستید که وجود خارجی ندارد!')
     else:
-        messages.error(request, 'لطفا اول برادریتو ثابت کن و تو اکانت لاگین کن. بعدش نظر بده.')
+        messages.error(request, 'برای ارسال نظر باید ابتدا وارد حساب کاربری خود شوید.')
     return redirect(request.META.get('HTTP_REFERER'))
 
 

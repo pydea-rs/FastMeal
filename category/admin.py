@@ -4,9 +4,8 @@ from .models import Category
 
 class CategoryAdminPanel(admin.ModelAdmin):
     list_display = ['name_fa', 'name']
-    prepopulated_fields = {'slug': ('name', )}
     search_fields = ('name', 'name_fa', )
-    readonly_fields = ('created_at', 'updated_at',)
+    readonly_fields = ('created_at', 'updated_at', 'slug')
 
 
 admin.site.register(Category, CategoryAdminPanel)
