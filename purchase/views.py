@@ -12,14 +12,14 @@ from user.models import User
 def finalize_order(request, order_key, method, status, reference_id=None, amount=None):
     order = None
     try:
-        order = Order.objects.get(buyer=request.user, key=order_key)
+        order = Order.objects.get(owner=request.user, key=order_key)
         if order:
             order.verified = status.lower()
             # now we ship the taken product items to ordered product items
-            user_stack = open_cart(request)
-            user_stack.submit_bill()  # to make sure total products in the cart are billed successfully
-            stack_items = TakenProduct.objects.filter(stack=user_stack)
-            for item in stack_items:
+            user_cart = open_cart(request)
+            user_cart.submit_bill()  # to make sure total products in the cart are billed successfully
+            cart_items = TakenProduct.objects.filter(cart=user_cart)
+            for item in cart_items:
                 purchased_item = PurchasedItem()
                 purchased_item.order_id = order.id  # another way of setting an ForeignKey object's value inside a
                 # model
@@ -38,7 +38,7 @@ def finalize_order(request, order_key, method, status, reference_id=None, amount
                 else:
                     order.verified = "failed"
             order.save()
-            user_stack.delete()
+            user_cart.delete()
             return order
         else:
             print('No order has been found')
@@ -48,9 +48,10 @@ def finalize_order(request, order_key, method, status, reference_id=None, amount
             order.save()
     # TODO: What happens if this is called with n order?
 
+
 def get_delivery_info(user: User, form: OrderForm) -> DeliveryInfo:
     try:
-        info = DeliveryInfo.objects.get(related_to=user, phone=form.cleaned_data['phone'])
+        info = DeliveryInfo.objects.get(user=user, phone=form.cleaned_data['phone'])
     except ObjectDoesNotExist:
         info = DeliveryInfo()
         info.phone = form.cleaned_data['phone']
@@ -69,11 +70,11 @@ def submit_order(request):
             return redirect('login')
 
         user = request.user
-        user_stack = open_cart(request)
-        user_stack.submit_bill()  # to make sure total products in the cart are billed successfully
-        stack_items = TakenProduct.objects.filter(stack=user_stack)
-        # use stack_items or add a quantity field to cart model?
-        if stack_items.count() <= 0:
+        user_cart = open_cart(request)
+        user_cart.submit_bill()  # to make sure total products in the cart are billed successfully
+        cart_items = TakenProduct.objects.filter(cart=user_cart)
+        # use cart_items or add a quantity field to cart model?
+        if cart_items.count() <= 0:
             return redirect('store')
 
         if request.method == 'POST':
@@ -84,8 +85,8 @@ def submit_order(request):
                 
                 order.receiver = get_delivery_info(user, form)
 
-                order.cost = user_stack.worth
-                order.discounts = user_stack.discounts
+                order.cost = user_cart.worth
+                order.discounts = user_cart.discounts
                 order.shipping_cost = 5000  # FIXME: How this should get calculated?
 
                 order.owner = user
@@ -98,10 +99,10 @@ def submit_order(request):
                 new_share.calculate()
                 new_share.save()
                 # use Order.objects.get to make sure that the order is saved properly and retrievable
-                order = Order.objects.get(buyer=request.user, key=order.key)
+                order = Order.objects.get(owner=request.user, key=order.key)
                 context = {
                     'order': order,
-                    'goods': stack_items,
+                    'goods': cart_items,
                 }
                 return render(request, 'purchase/preview.html', context)
     except Exception as ex:
@@ -132,7 +133,7 @@ def check_order(request, order_key):
 def accept_order(request, order_key):
     order = None
     try:
-        order = Order.objects.get(key=order_key, buyer=request.user)
+        order = Order.objects.get(key=order_key, owner=request.user)
         if request.user and request.user.is_authenticated and order_key:
             if order and order.verified.lower() == "certified":
                 order.sell_products()
@@ -149,7 +150,7 @@ def accept_order(request, order_key):
 def take_receipt(request, order_key):
     user = request.user
     if user and user.is_authenticated:
-        order = Order.objects.get(buyer=user, key=order_key)
+        order = Order.objects.get(owner=user, key=order_key)
         if order:
             context = {'order': order}
             return render(request, 'purchase/receipt.html', context)
@@ -165,7 +166,7 @@ def reserve_order(request):
             receipt.save()
             transaction = Transaction(source=request.user, method="reserve", validation="pending", receipt=receipt)
             transaction.save()
-            order = Order.objects.get(key=form.cleaned_data["order_key"], buyer=request.user)
+            order = Order.objects.get(key=form.cleaned_data["order_key"], owner=request.user)
             if order:
                 order.transaction = transaction
                 order.save()

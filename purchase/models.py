@@ -174,10 +174,10 @@ class PurchasedItem(models.Model):
         return self.id
 
     def total_price(self):  # the price of all items of this product(and variation) without considering discounts
-        return self.quantity * self.product.price
+        return self.quantity * self.variation.price
 
     def absolute_price(self):  # each item price considering the discounts
-        return int(self.product.price * (100 - self.product.discount) / 100)
+        return int(self.variation.price * (100 - self.product.discount) / 100)
 
     def final_price(self):  # absolute price considering the quantity of the item and discounts
         return self.absolute_price() * self.quantity

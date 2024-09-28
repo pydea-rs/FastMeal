@@ -27,7 +27,7 @@ def put_back(request, product_id, taken_item_id):
     current_cart = None
     try:
         current_cart = open_cart(request)
-        taken = TakenProduct.objects.get(id=taken_item_id, product=product, stack=current_cart)
+        taken = TakenProduct.objects.get(id=taken_item_id, product=product, cart=current_cart)
         taken.decrement_quantity()
         taken.save()
 
@@ -45,7 +45,7 @@ def put_all(request, product_id, taken_item_id, ):
     current_cart = None
     try:
         current_cart = open_cart(request)
-        TakenProduct.objects.get(id=taken_item_id, product=product, stack=current_cart).delete()
+        TakenProduct.objects.get(id=taken_item_id, product=product, cart=current_cart).delete()
 
     except TakenProduct.DoesNotExist:
         # handle this error (actually it must never happen
@@ -61,11 +61,11 @@ def take_another(request, product_id, taken_item_id):
     current_cart = None
     try:
         current_cart = open_cart(request)
-        taken = TakenProduct.objects.get(id=taken_item_id, product=product, stack=current_cart)
+        taken = TakenProduct.objects.get(id=taken_item_id, product=product, cart=current_cart)
         taken.increment_quantity()
         taken.save()
     except TakenProduct.DoesNotExist:
-        taken = TakenProduct.objects.create(product=product, stack=current_cart, quantity=1, total_price=product.price)
+        taken = TakenProduct.objects.create(product=product, cart=current_cart, quantity=1, total_price=product.price)
         taken.save()
     except ObjectDoesNotExist:
         # handle this error seriously
@@ -76,14 +76,19 @@ def take_another(request, product_id, taken_item_id):
 def take_product(request, product_id):
     product = Product.objects.get(id=product_id)
     variation = None
+    current_page = request.META.get('HTTP_REFERER')
     if request.method == 'POST':
+        if 'variation' not in request.POST:
+            messages.error(f'نوع {product} مشخص نشده است.')
+            return redirect(current_page)
+
         variation = request.POST['variation']
 
         try:
-            variation = Variation.objects.get(product=product, name=variation)
+            variation = Variation.objects.get(product=product, id=variation)
             if not variation.is_available:
                 messages.error(request, "این کالا موجود نیست!")
-                return redirect(request.META.get('HTTP_REFERER'))
+                return redirect(current_page)
         except:  # such as csrf_token
             pass
 
@@ -91,7 +96,7 @@ def take_product(request, product_id):
         try:
             current_cart = open_cart(request)
             try:
-                taken = TakenProduct.objects.get(variation=variation, stack=current_cart)
+                taken = TakenProduct.objects.get(variation=variation, cart=current_cart)
             except:
                 taken = None
 
@@ -113,7 +118,7 @@ def take_product(request, product_id):
     return redirect('cart')
 
 
-def stack(request):
+def get_cart(request):
     try:
         context = open_cart(request).submit_bill()
     except ObjectDoesNotExist:

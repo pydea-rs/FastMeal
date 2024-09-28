@@ -91,15 +91,15 @@
                             <div dir="rtl"  class="card-body text-right">
                                 <dl class="dlist-align">
                                   <dt>قیمت اصلی:</dt>
-                                  <dd class="text-left text-primary">{{ stack.cost | intcomma:False }}&nbsp;&nbsp; تومن</dd>
+                                  <dd class="text-left text-primary">{{ cart.worth | intcomma:False }}&nbsp;&nbsp; تومن</dd>
                                 </dl>
                                 <dl class="dlist-align">
                                   <dt>تخفیف:</dt>
-                                  <dd class="text-left text-danger">{{ stack.discounts | intcomma:False }}-  &nbsp;تومن</dd>
+                                  <dd class="text-left text-danger">{{ cart.discounts | intcomma:False }}-  &nbsp;تومن</dd>
                                 </dl>
                                 <dl class="dlist-align">
                                   <dt>هزینه نهایی:</dt>
-                                  <dd class="text-left text-success b"><strong>{{ stack.final_cost | intcomma:False }}</strong>&nbsp;&nbsp; تومن</dd>
+                                  <dd class="text-left text-success b"><strong>{{ cart.final_cost | intcomma:False }}</strong>&nbsp;&nbsp; تومن</dd>
                                 </dl>
                                 <hr>
                                 <button type="submit" class="btn btn-success btn-block btn-shaking"> ثبت سفارش </button>

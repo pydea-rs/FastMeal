@@ -29,11 +29,7 @@ class Cart(models.Model):
     def submit_bill(self):
         self.worth = self.discounts = 0
         try:
-            # if stack_owner.is_authenticated:
-            # taken items = TakenProduct.objects.all().filter(stack__belongs_to=stack_owner).filter(is_available=True)
-            # else:
-            #    taken items = TakenProduct.objects.all().filter(cart=self).filter(is_available=True)
-            taken_items = TakenProduct.objects.filter(stack=self, is_available=True)
+            taken_items = TakenProduct.objects.filter(cart=self, is_available=True)
             # calculate costs:
             for item in taken_items:
                 self.worth += item.total_absolute_price()

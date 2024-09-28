@@ -10,7 +10,7 @@ from django.contrib import messages
 def user_dashboard(request):
     context = {}
     try:
-        context['your_orders_count'] = Order.objects.filter(buyer=request.user, status='certified').count()
+        context['your_orders_count'] = Order.objects.filter(owner_id=request.user.id, status='certified').count()
     except:
         context['your_orders_count'] = 'خطای بارگذاری'
     return render(request, 'dashboard/index.html', context)
@@ -21,7 +21,7 @@ def user_orders(request):
     context = {}
     try:
         # send all orders to admin?
-        context['your_orders'] = Order.objects.filter(buyer=request.user).order_by('-date_created')
+        context['your_orders'] = Order.objects.filter(owner=request.user).order_by('-date_created')
         for order in context['your_orders']:
             order.status_fa = ORDER_STATUS[str(order.status)]
     except:

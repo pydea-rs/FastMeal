@@ -40,7 +40,7 @@ class MailingInterface:
 
     @staticmethod
     def SendMessage(request, target_email, subject, template_name, dict_content):
-        user = request.author
+        user = request.user
         time_passed_from_last_email, profile = Profile.get_email_time_passed(user)
 
         if 0 <= time_passed_from_last_email <= MailingInterface.MIN_EMAIL_TIME_DIFFERENCE:

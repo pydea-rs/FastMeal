@@ -2,10 +2,11 @@ import json
 
 from django.shortcuts import render, get_object_or_404, redirect
 from category.models import Category
-from .models import Product, Review, Gallery, Variation
+from .models import Product, Review, Gallery
 from .forms import ReviewForm
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+import json
 
 
 def store(request, category_filter=None):
@@ -55,13 +56,12 @@ def product(request, category_filter, product_slug=None):
     context = dict()
     try:
         this_product = Product.objects.get(slug=product_slug, category__slug=category_filter)
-        variations = Variation.objects.filter(product_id=this_product.id, is_available=True)
-        reviews = Review.objects.filter(product=this_product, status=True)
-
+        reviews = Review.objects.filter(product=this_product,)
         gallery = Gallery.objects.filter(product=this_product)
         context = {
             'this_product': this_product,
-            'variations': variations,
+            'variations': this_product.variation_set.all,
+            'variations_json': json.dumps(this_product.variation_set.specifics),
             'reviews': reviews,
             'gallery': gallery,
         }
@@ -78,7 +78,7 @@ def post_review(request, product_id):
             try:
                 # ّFIXME: This is a little idiotic i think
                 #  , i think its better user be able to put multiple comments on each product
-                old_review = Review.objects.get(user__id=request.user.id, product__id=product_id)
+                old_review = Review.objects.get(author__id=request.user.id, product__id=product_id)
                 form = ReviewForm(request.POST, instance=old_review)  # instance=review parameter will prevent from
                 # django from creating new review, and it will replace existing one
                 form.save()
@@ -88,7 +88,7 @@ def post_review(request, product_id):
                 if form.is_valid():
                     try:
                         product_to_be_reviewed = Product.objects.get(id=product_id)
-                        new_review = Review(product=product_to_be_reviewed, user=request.user,
+                        new_review = Review(product=product_to_be_reviewed, author=request.user,
                                             comment=form.cleaned_data['comment'], rating=form.cleaned_data['rating'],
                                             ip=request.META.get('REMOTE_ADDR'))
                         # validate form and ip first

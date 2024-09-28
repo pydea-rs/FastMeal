@@ -19,4 +19,4 @@ class DevShareAdminPanel(admin.ModelAdmin):
         return False
 
 
-admin.site.register(DevShare, DevShareAdminPanel)
+# admin.site.register(DevShare, DevShareAdminPanel)

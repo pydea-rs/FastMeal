@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django import forms
 from .forms import RegisterForm, InputValidator
 from .models import User, Profile
-from cart.utlities import attach_current_stack_to_current_user, merge_user_stacks
+from cart.utlities import attach_current_cart_to_current_user, merge_user_carts
 from django.contrib import messages, auth
 from django.contrib.auth.decorators import login_required
 from django.utils.http import urlsafe_base64_decode
@@ -59,9 +59,9 @@ def login(request):
                 messages.error(request, 'این اکانت هنوز فعال سازی نشده است. لطفا به ایمیل خود مراجعه کنید!')
                 return redirect('login')
             else:  # ok credentials
-                attach_current_stack_to_current_user(request=request, user=user)  # must be exactly before auth.login
+                attach_current_cart_to_current_user(request=request, user=user)  # must be exactly before auth.login
                 auth.login(request, user)
-                merge_user_stacks(user)
+                merge_user_carts(user)
                 messages.success(request, 'ورود شما موفقیت آمیز بود.')
                 # get the current ip of the user every time
                 user.ip = request.META.get('REMOTE_ADDR')

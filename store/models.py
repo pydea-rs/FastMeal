@@ -13,8 +13,6 @@ class Product(models.Model):
     name = models.CharField(max_length=256, blank=False, verbose_name="نام (انگلیسی)")
     name_fa = models.CharField(max_length=256, blank=False, verbose_name="نام")
     slug = models.SlugField(max_length=600, unique=True)
-    content = models.TextField(max_length=256, blank=True, verbose_name="محتویات")
-    price = models.IntegerField(verbose_name="قیمت پایه")
     is_available = models.BooleanField(default=True, verbose_name="در دسترس بودن")
     discount = models.IntegerField(default=0, verbose_name="تخفیف")
     category = models.ForeignKey(Category, on_delete=models.DO_NOTHING, verbose_name="دسته بندی")
@@ -29,9 +27,20 @@ class Product(models.Model):
         verbose_name = "محصول"
         verbose_name_plural = "محصولات"
 
+    @property
+    def price(self):
+        variations = self.variation_set.all
+        if not variations:
+            return None
+        min_price = min(variations, key=lambda var: var.price).price
+        max_price = max(variations, key=lambda var: var.price).price
+        return min_price if min_price == max_price else f'{min_price} - {max_price}'
+
+    @property
     def url(self):
         return reverse('single_product', args=[self.category.slug, self.slug])
 
+    @property
     def ID(self):
         return self.id
 
@@ -39,16 +48,21 @@ class Product(models.Model):
         return self.name_fa
         # return self.name_fa
 
+    @property
     def format_rating(self):
-        reviews = Review.objects.filter(product=self, status=True).aggregate(average_rating=Avg('rating'),
-                                                                             count=Count('id'))
-        if reviews['count']:
-            return f'{float(reviews["average_rating"])}/5.0 [{int(reviews["count"])}]'
+        rating = self.rating
+        if rating:
+            return f'{float(rating)}/5.0'
         return "-"
 
+    @property
+    def reviews_count(self):
+        return Review.objects.filter(product=self, verified=True).count()
+
+    @property
     def rating(self):
         try:
-            return Review.objects.filter(product=self, status=True).aggregate(average_rating=Avg('rating'))[
+            return Review.objects.filter(product=self, verified=True).aggregate(average_rating=Avg('rating'))[
                 'average_rating']
         except Exception as ex:
             print("Something went wrong while calculating product rating because: ", ex)
@@ -62,8 +76,7 @@ class VariationManager(models.Manager):
 
     @property
     def all(self):
-        variations = super(VariationManager, self).filter(is_available=True)
-        return variations
+        return super(VariationManager, self).filter(is_available=True)
 
     def find_specific_variation(self, variation_name):
         return super(VariationManager, self).filter(name=variation_name, is_available=True)
@@ -79,6 +92,14 @@ class VariationManager(models.Manager):
     def count(self):
         return super(VariationManager, self).filter(is_available=True).count()
 
+    @property
+    def specifics(self):
+        variations = super(VariationManager, self).filter(is_available=True)
+        result = {}
+        for var in variations:
+            result[var.id] = {'price': var.price, 'content': var.content}
+        return result
+
 
 class Variation(models.Model):
     class Meta:
@@ -92,8 +113,9 @@ class Variation(models.Model):
     is_available = models.BooleanField(default=True, verbose_name="در دسترس بودن")
     created_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ ایجاد")
     updated_at = models.DateTimeField(auto_now=True, verbose_name="تاریخ به روزرسانی مشخصات")
-    objects = VariationManager()
     price = models.IntegerField(verbose_name="قیمت")
+    content = models.TextField(max_length=256, blank=True, verbose_name="محتویات")
+    objects = VariationManager()
 
     @property
     def restaurant_name(self):
@@ -147,4 +169,4 @@ def prepopulate_slug(sender, instance, **kwargs):
     if not instance.slug:
         slug = slugify(f"{instance.name}-{instance.restaurant.slug}")
         existing = Product.objects.filter(slug__icontains=slug).count()
-        instance.slug = slug if not existing else f'{slug}-{existing+1}'
+        instance.slug = slug if not existing else f'{slug}-{existing + 1}'

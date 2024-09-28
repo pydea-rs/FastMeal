@@ -35,9 +35,11 @@
                                                          - {{ taken.variation }}
                                                         {% endif %}
                                                     </a>
-
-                                                    <p class="text-muted small text-center">
-                                                        دسته بندی: {{ taken.product.category }}
+                                                    <p class="text-muted small text-right my-2">
+                                                        {{ taken.product.restaurant }}
+                                                    </p>
+                                                    <p class="text-muted small text-right my-2">
+                                                         {{ taken.product.category }}
                                                     </p>
                                                 </figcaption>
                                             </figure>
@@ -58,9 +60,9 @@
                                         <td>
                                             <div class="price-wrap text-center">
                                                 <h4>
-                                                    <span class="mx-1 my-1 badge badge-pill badge-primary">{{ taken.total_price | intcomma:False }} تومن</span>
+                                                    <span class="mx-1 my-1 badge badge-pill badge-primary">{{ taken.total_absolute_price | intcomma:False }}  تومان  </span>
                                                 </h4>
-                                                <small class="text-muted">هرکدوم {{ taken.variation.price | intcomma:False }} تومن </small>
+                                                <small class="text-muted">هر یک {{ taken.variation.price | intcomma:False }} تومان </small>
                                             </div> <!-- price-wrap .// -->
                                         </td>
                                         <td>
@@ -88,7 +90,7 @@
                         <div dir="rtl"  class="card-body text-right">
                             <dl class="dlist-align">
                               <dt>قیمت اصلی:</dt>
-                              <dd class="text-center text-primary">{{ cart.cost | intcomma:False }}&nbsp;&nbsp; تومن</dd>
+                              <dd class="text-center text-primary">{{ cart.worth | intcomma:False }}&nbsp;&nbsp; تومن</dd>
                             </dl>
                             <dl class="dlist-align">
                               <dt>تخفیف:</dt>
@@ -103,7 +105,7 @@
                               <dd class="text-center text-success b"><strong>{{ cart.final_cost | intcomma:False }}</strong>&nbsp;&nbsp; تومن</dd>
                             </dl>
                             <hr>
-                            <a href="{% url 'order' %}" class="btn btn-warning btn-block btn-shaking"> زد و بند </a>
+                            <a href="{% url 'order' %}" class="btn btn-warning btn-block btn-shaking">سفارش</a>
                             <a href="{% url 'store' %}" class="btn btn-secondary btn-block btn-shaking"> ادامه خرید </a>
 
                         </div> <!-- card-body.// -->
