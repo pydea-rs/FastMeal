@@ -21,7 +21,7 @@ def user_orders(request):
     context = {}
     try:
         # send all orders to admin?
-        context['your_orders'] = Order.objects.filter(owner=request.user).order_by('-date_created')
+        context['your_orders'] = Order.objects.filter(owner=request.user).order_by('-created_at')
         for order in context['your_orders']:
             order.status_fa = ORDER_STATUS[str(order.status)]
     except:
@@ -90,7 +90,7 @@ def change_pass(request):
 
 @login_required(login_url='login')
 def view_order(request, order_key):
-    if not request.user.is_authenticated:
+    if not request.user or not request.user.is_authenticated:
         return redirect('login')
     context = {}
     try:

@@ -8,7 +8,9 @@
     <ul class="list-group text-right px-0">
         <a class="list-group-item {% if request.path == '/dashboard/' %}active{% endif %}" href="{% url 'user-dashboard' %}"> اکانت </a>
         <a class="list-group-item {% if request.path == '/dashboard/profile/' %}active{% endif %}" href="{% url 'profile' %}"> پروفایل </a>
-        <a class="list-group-item {% if request.path == '/dashboard/orders/' %}active{% endif %}" href="{% url 'user-orders' %}"> سفارش ها </a>
+        <a class="list-group-item {% if '/dashboard/orders/' in request.path %}active{% endif %}" href="{% url 'user-orders' %}">
+            {% if request.path != '/dashboard/orders/'%}→{%endif%} سفارش ها 
+        </a>
         <a class="list-group-item {% if request.path == '/dashboard/chpwd/' %}active{% endif %}" href="{% url 'user-chpwd' %}"> تغییر رمزعبور </a>
         <br />
         <a class="btn btn-outline-danger btn-block text-right list-group-item btn-shaking" href="{% url 'logout' %}">

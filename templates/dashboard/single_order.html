@@ -24,10 +24,10 @@
                                     <div style="border-top: 1px solid black" class="container my-4">
                                         <div class="row my-5">
                                             <div class="col-md-6">
-                                                نام: <strong class="mx-5">{{ order.receiver }}</strong>
+                                                نام: <strong class="mx-5">{{ order.receiver.name }}</strong>
                                             </div>
                                             <div class="col-md-6">
-                                              آدرس: <strong class="mx-4">{{ order.receiver.province }}, {{ order.receiver.city }}, {{ order.receiver.address }} </strong>
+                                              آدرس: <strong class="mx-4">{{ order.receiver }} </strong>
                                             </div>
                                         </div>
                                         <div class="row my-5">
@@ -40,7 +40,7 @@
                                         </div>
                                         <div class="row my-5">
                                             <div class="col-md-6">
-                                               تاریخ:<strong class="mx-5"> {{ order.date_created }} </strong>
+                                               تاریخ:<strong class="mx-5"> {{ order.created_at }} </strong>
                                             </div>
                                             <div class="col-md-6">
                                                وضعیت:<strong class="mx-4"> {{ order.status_fa }} </strong>
@@ -87,7 +87,7 @@
                                                 </tr>
                                                 <tr>
                                                     <th class="text-right p-4">مجموع تخفیف</th>
-                                                    <th colspan="2" class="text-center p-3">{{ order.discounts }}-</th>
+                                                    <th colspan="2" class="text-center p-3">{{ order.discounts_amount }}</th>
                                                 </tr>
                                                 <tr>
                                                     <th class="text-right p-4">هزینه ارسال</th>
