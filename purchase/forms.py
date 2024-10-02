@@ -3,8 +3,6 @@ from .models import DeliveryInfo, Receipt
 
 
 class OrderForm(forms.ModelForm):
-    notes = forms.CharField(widget=forms.Textarea())
-
     class Meta:
         model = DeliveryInfo
         fields = ['location', 'phone', 'notes']
@@ -12,8 +10,8 @@ class OrderForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super(OrderForm, self).__init__(*args, **kwargs)
 
-class ReserveTransactionForm(forms.ModelForm):
 
+class ReserveTransactionForm(forms.ModelForm):
     class Meta:
         model = Receipt
         fields = ['amount', 'image', 'reference_id', 'order_key']

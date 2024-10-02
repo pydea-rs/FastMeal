@@ -29,7 +29,7 @@ class Cart(models.Model):
     def submit_bill(self):
         self.worth = self.discounts = 0
         try:
-            taken_items = TakenProduct.objects.filter(cart=self, is_available=True)
+            taken_items = TakenProduct.objects.filter(cart=self)
             # calculate costs:
             for item in taken_items:
                 self.worth += item.total_absolute_price()
@@ -53,15 +53,14 @@ class TakenProduct(models.Model):
     variation = models.ForeignKey(Variation, on_delete=models.CASCADE, verbose_name="نوع")
     cart = models.ForeignKey(Cart, on_delete=models.CASCADE, verbose_name="سبد")
     quantity = models.IntegerField(default=0, verbose_name="تعداد")
-    is_available = models.BooleanField(default=True, verbose_name="در دسترس؟")  # TODO: Remove this field
-    added_to_cart_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ قرار گرفتن در سبد")
+    taken_at = models.DateTimeField(auto_now_add=True, verbose_name="تاریخ قرار گرفتن در سبد")
 
     class Meta:
         verbose_name = 'آیتم داخل سبد'
         verbose_name_plural = 'آیتم های داخل سبد'
 
     def increment_quantity(self):
-        if self.product.is_available and self.variation.is_available:
+        if self.variation.is_available:
             self.quantity += 1
 
     def decrement_quantity(self):

@@ -15,11 +15,11 @@ def submit_preferred_variation(variation, taken=None, product=None, current_cart
             elif not product:
                 raise TakenProduct.DoesNotExist('Unknown product. cannot create a new Taken field')
             elif not current_cart:
-                raise Cart.DoesNotExist('Something went wrong while opening a new shopping cart.')
+                raise Cart.DoesNotExist('User does not have available cart.')
         taken.quantity = 1
         taken.save()
     else:
-        raise Variation.DoesNotExist('Insufficient number of selected variations')
+        raise Variation.DoesNotExist('Product variation must always be selected.')
 
 
 def put_back(request, product_id, taken_item_id):
@@ -100,7 +100,7 @@ def take_product(request, product_id):
             except:
                 taken = None
 
-            if (not taken or not taken.quantity) and product.is_available:
+            if not taken or not taken.quantity:
                 submit_preferred_variation(taken=taken, variation=variation, product=product,
                                            current_cart=current_cart)
             else:

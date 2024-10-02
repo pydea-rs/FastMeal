@@ -13,7 +13,6 @@ class Product(models.Model):
     name = models.CharField(max_length=256, blank=False, verbose_name="نام (انگلیسی)")
     name_fa = models.CharField(max_length=256, blank=False, verbose_name="نام")
     slug = models.SlugField(max_length=600, unique=True)
-    is_available = models.BooleanField(default=True, verbose_name="در دسترس بودن")
     discount = models.IntegerField(default=0, verbose_name="تخفیف")
     category = models.ForeignKey(Category, on_delete=models.DO_NOTHING, verbose_name="دسته بندی")
     image = models.ImageField(upload_to='photos/food', verbose_name="تصویر")
@@ -99,6 +98,14 @@ class VariationManager(models.Manager):
         for var in variations:
             result[var.id] = {'price': var.price, 'content': var.content}
         return result
+
+    def is_cheaper_than(self, price: int | float):
+        variations = super(VariationManager, self).filter(is_available=True)
+        return variations.count() == variations.filter(price__lte=price).count()
+
+    def is_expensive_than(self, price: int | float):
+        variations = super(VariationManager, self).filter(is_available=True)
+        return variations.count() == variations.filter(price__gte=price).count()
 
 
 class Variation(models.Model):

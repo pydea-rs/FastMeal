@@ -75,7 +75,7 @@
                                                     <h4>
                                                         <span class="mx-1 my-1 badge badge-pill badge-primary">{{ taken.total_price | intcomma:False }}</span>
                                                     </h4>
-                                                    <small class="text-muted"> هر كالا {{ taken.product.price }}</small>
+                                                    <small class="text-muted"> هر كالا {{ taken.variation.price }}</small>
                                                 </div> <!-- price-wrap .// -->
                                             </td>
                                             <td>
@@ -93,10 +93,14 @@
                                   <dt>قیمت اصلی:</dt>
                                   <dd class="text-left text-primary">{{ cart.worth | intcomma:False }}&nbsp;&nbsp; تومن</dd>
                                 </dl>
-                                <dl class="dlist-align">
-                                  <dt>تخفیف:</dt>
-                                  <dd class="text-left text-danger">{{ cart.discounts | intcomma:False }}-  &nbsp;تومن</dd>
-                                </dl>
+                                    <dl class="dlist-align">
+                                        <dt>تخفیف:</dt>
+                                        {% if cart.discounts %}
+                                          <dd class="text-left text-danger">{{ cart.discounts | intcomma:False }} تومن</dd>
+                                        {% else %}
+                                          <dd class="text-left text-danger mx-5">-</dd>
+                                        {% endif %}
+                                    </dl>
                                 <dl class="dlist-align">
                                   <dt>هزینه نهایی:</dt>
                                   <dd class="text-left text-success b"><strong>{{ cart.final_cost | intcomma:False }}</strong>&nbsp;&nbsp; تومن</dd>

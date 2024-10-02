@@ -41,34 +41,34 @@
                             </header>
                             <div class="filter-content collapse show" id="collapse_3" style="">
                                 {% if category_filter %}
-                                <form action="{% url 'filtered_by_category' category_filter %}" method="POST">
+                                    <form action="{% url 'filtered_by_category' category_filter %}" method="POST">
                                 {% else %}
-                                <form action="{% url 'store' %}" method="POST">
+                                    <form action="{% url 'store' %}" method="POST">
                                 {% endif %}
-                                    {% csrf_token %}
-                                    <div class="card-body">
+                                        {% csrf_token %}
+                                        <div class="card-body">
 
-                                        <div class="form-row">
-                                            <div class="form-group col-md-6 text-center">
-                                                <label>از</label>
-                                                {% if min_price > 0 %}
-                                                    <input type="number" name="min_price" class="form-control" value="{{min_price}}" />
-                                                {% else %}
-                                                    <input type="number" name="min_price" class="form-control" />
-                                                {% endif %}
-                                            </div>
-                                            <div class="form-group text-center col-md-6">
-                                                <label>تا</label>
-                                                {% if max_price > 0 %}
-                                                    <input type="number" name="max_price" class="form-control" value="{{max_price}}" />
-                                                {% else %}
-                                                    <input type="number" name="max_price" class="form-control" />
-                                                {% endif %}
-                                            </div>
-                                        </div> <!-- form-row.// -->
-                                        <button type="submit" class="btn btn-block btn-primary btn-shaking">اعمال</button>
-                                    </div><!-- card-body.// -->
-                                </form>
+                                            <div class="form-row">
+                                                <div class="form-group col-md-6 text-center">
+                                                    <label>از</label>
+                                                    {% if min_price > 0 %}
+                                                        <input type="number" name="min_price" class="form-control" value="{{min_price}}" />
+                                                    {% else %}
+                                                        <input type="number" name="min_price" class="form-control" />
+                                                    {% endif %}
+                                                </div>
+                                                <div class="form-group text-center col-md-6">
+                                                    <label>تا</label>
+                                                    {% if max_price > 0 %}
+                                                        <input type="number" name="max_price" class="form-control" value="{{max_price}}" />
+                                                    {% else %}
+                                                        <input type="number" name="max_price" class="form-control" />
+                                                    {% endif %}
+                                                </div>
+                                            </div> <!-- form-row.// -->
+                                            <button type="submit" class="btn btn-block btn-primary btn-shaking">اعمال</button>
+                                        </div><!-- card-body.// -->
+                                    </form>
                             </div>
                         </article> <!-- filter-group .// -->
 

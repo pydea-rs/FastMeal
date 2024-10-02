@@ -19,7 +19,7 @@
                           ثبت شده و به لوکیشن
                         <mark>{{ order.receiver.location }}</mark>
                         تحویل می شود.
-                          ارسال میشه.
+                          ارسال می شود.
                         </p>
                       {% if order.notes %}
                             <p>
@@ -104,12 +104,16 @@
                                                     <div class="price-wrap text-center">
                                                         <h4>
                                                             <span dir="ltr" class="mx-1 my-1 badge badge-pill badge-success text-white">
-                                                                <del>{{item.variation.price | intcomma:False}}</del>
-                                                                {%  if item.product.discount %}
-                                                                    <sub>{{ item.absolute_price | intcomma:False }}</sub>
+                                                                {% if item.quantity > 1 %}
+                                                                    {%  if item.product.discount %}
+                                                                        <del>{{item.variation.price | intcomma:False}}</del>
+                                                                        <sub>{{ item.absolute_price | intcomma:False }}</sub>
+                                                                    {% else %}
+                                                                        <span>{{item.variation.price | intcomma:False}}</span>
+                                                                    {% endif %}
+                                                                    <span style="font-size: 90%">x</span> {{ item.quantity }} =
                                                                 {% endif %}
-                                                                x {{ item.quantity }}
-                                                                = {{ item.final_price | intcomma:False }}
+                                                                {{ item.final_price | intcomma:False }}
                                                             </span>
                                                         </h4>
                                                     </div> <!-- price-wrap .// -->
@@ -133,10 +137,12 @@
                               <dt>قیمت اصلی:</dt>
                               <dd class="text-left text-primary">{{ order.cost | intcomma:False }}&nbsp;&nbsp; تومن</dd>
                             </dl>
-                            <dl class="dlist-align">
-                              <dt>تخفیف:</dt>
-                              <dd class="text-left text-danger">{{ order.discounts | intcomma:False }}-  &nbsp;تومن</dd>
-                            </dl>
+                            {% if order.discounts %}
+                                <dl class="dlist-align">
+                                  <dt>تخفیف:</dt>
+                                  <dd class="text-left text-danger">{{ order.discounts | intcomma:False }}  &nbsp;تومن</dd>
+                                </dl>
+                            {% endif %}
                             <dl class="dlist-align">
                               <dt>هزینه ارسال:</dt>
                               <dd class="text-left text-primary">{{ order.shipping_cost | intcomma:False }}&nbsp;&nbsp; تومن</dd>

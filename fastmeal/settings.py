@@ -38,7 +38,6 @@ INSTALLED_APPS = [
     'cart',
     'purchase',
     'dashboard',
-    'devshare',
     'restaurant'
     # 'gateways'
 ]

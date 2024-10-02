@@ -21,24 +21,6 @@ class MailingInterface:
     MIN_EMAIL_TIME_DIFFERENCE = 60  # secs
 
     @staticmethod
-    def SendBySendGrid(target, subject, content):
-        api_key = config('SENDGRID_API_KEY')
-        from_email = config('SENDGRID_FROM_EMAIL')
-        message = Mail(
-            from_email=from_email,
-            to_emails=target,
-            subject=subject,
-            html_content=content)
-        try:
-            sg = SendGridAPIClient(api_key)
-            response = sg.send(message)
-        #            print(response.status_code)
-        #           print(response.body)
-        #           print(response.headers)
-        except Exception as e:
-            print(e)
-
-    @staticmethod
     def SendMessage(request, target_email, subject, template_name, dict_content):
         user = request.user
         time_passed_from_last_email, profile = Profile.get_email_time_passed(user)

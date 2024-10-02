@@ -3,9 +3,9 @@
 <section class="section-content text-right  padding-y" style="direction:rtl;min-height:84vh">
 {% if request.GET.command == 'verification' %}
 	<div class="container mx-auto text-center alert alert-info" role="alert" style="max-width: 380px; margin-top:100px;">
-        یک ایمیل حاوی لینک فعال سازی به {{request.GET.email}} ارسال شد. برای تکمیل فرایند ثبت نام به ایمیل خود مراجعه کنید...
+        یک ایمیل حاوی لینک فعال سازی به {{request.GET.email}} ارسال شد. برای تکمیل فرایند ثبت نام به ایمیل خود مراجعه کنید.
         <br /><hr />
-        اگر اکانتت رو فعال کردی از <a href="{% url 'login' %}">اینجا وارد شو</a>...
+        اگر اکانتت رو فعال کردی از <a href="{% url 'login' %}">اینجا وارد شو</a>
     </div>
 {% else %}
 <!-- ============================ COMPONENT LOGIN   ================================= -->
@@ -34,7 +34,7 @@
       </div> <!-- card-body.// -->
     </div> <!-- card .// -->
 
-     <p class="text-center mt-4">هنوز ثبت نام نکردی؟ <a href="{% url 'register' %}">اینجا کلیک کن</a>...</p>
+     <p class="text-center mt-4">هنوز ثبت نام نکردی؟ <a href="{% url 'register' %}">اینجا کلیک کن</a></p>
      <br><br>
 {% endif %}
 <!-- ============================ COMPONENT LOGIN  END.// ================================= -->

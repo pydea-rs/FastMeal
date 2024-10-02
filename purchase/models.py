@@ -7,23 +7,26 @@ from django.urls import reverse
 ORDER_STATUS = {
     'new': 'جدید',
     'pending': 'در دست بررسی',
-    'verified': 'سفارش معتبر',
-    'indebt': 'شامل بدهی',
+    'verified': 'تایید شده',
     'sent': ' ارسال شده',
     'delivered': 'تحویل شده',
-    'refused': 'سفارش نامعتبر',
-    'not_sent': 'عدم ارسال',
-    'undelivered': 'عدم تحویل',
-    'canceled': 'داستان',
-    'failed': 'ناموفق'
+    'refused': 'عدم تایید',
+    'not_available': 'عدم موجودی',
+    'sending_error': 'مشکل در ارسال',
+    'delivery_error': ' مشکل در تحویل',
+    'canceled': 'ناموفق'
 }
 
 
 class Receipt(models.Model):
+    owner = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='پرداخت کننده', )
     reference_id = models.CharField(max_length=30, verbose_name='کد رهیگیری')  # *** WHAT TO SET ON MAX_LENGTH ??
     image = models.ImageField(upload_to='photos/transactions', blank=True, null=True, verbose_name='عکس رسید')
     amount = models.IntegerField(verbose_name="مقدار تراکنش")
     order_key = models.CharField(max_length=20, verbose_name='شماره سفارش')
+
+    created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاریخ ایجاد', )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='تاریخ به روزرسانی',)
 
     class Meta:
         verbose_name = 'رسید'
@@ -65,7 +68,7 @@ class DeliveryInfo(models.Model):
         verbose_name_plural = 'اطلاعات تحویل گیرنده'
 
     def __str__(self):
-        return self.user.__str__()
+        return self.location.__str__()
 
     @property    
     def name(self):
@@ -78,18 +81,15 @@ class Order(models.Model):
     STATUS = (('new', ORDER_STATUS['new']), # FIXME: Arrange all these status, only use some
               ('pending', ORDER_STATUS['pending']),
               ('verified', ORDER_STATUS['verified']),
-              ('indebt', ORDER_STATUS['indebt']),
               ('sent', ORDER_STATUS['sent']),
               ('delivered', ORDER_STATUS['delivered']),
-
               ('separator', '--------------------'),
+              ('refused', ORDER_STATUS['refused']),
+              ('not_available', ORDER_STATUS['not_available']),
+              ('sending_error', ORDER_STATUS['sending_error']),
+              ('delivery_error', ORDER_STATUS['delivery_error']),
+              ('canceled', ORDER_STATUS['canceled']),)
 
-              ('invalid', ORDER_STATUS['refused']),
-              ('not_sent', ORDER_STATUS['not_sent']),
-              ('undelivered', ORDER_STATUS['undelivered']),
-              ('canceled', ORDER_STATUS['canceled']),
-              ('failed', ORDER_STATUS['failed']))
-    # model connections
     # EDIT ON_DELETE s
     key = models.CharField(max_length=20, verbose_name='شماره سفارش')
     owner = models.ForeignKey(User, on_delete=models.DO_NOTHING, null=True, verbose_name='صاحب سفارش')
@@ -102,7 +102,8 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS, default='new', verbose_name='وضعیت')
 
     cost = models.IntegerField(default=0, verbose_name='هزینه')
-    discounts = models.IntegerField(default=0, verbose_name='تخفیفی جات')
+    discounts = models.IntegerField(default=0, verbose_name='مبلغ تخفیف')
+
     shipping_cost = models.IntegerField(default=0, verbose_name='هزینه ارسال')
     seen = models.BooleanField(default=False, verbose_name='مشاهده توسط ادمین')
     whats_wrong = models.TextField(max_length=256, null=True, blank=True, verbose_name='علت رد سفارش')
@@ -110,6 +111,10 @@ class Order(models.Model):
     class Meta:
         verbose_name = 'سفارش'
         verbose_name_plural = 'سفارش ها'
+
+    @property
+    def discounts_amount(self):
+        return self.discounts if self.discounts else "-"
 
     @property
     def final_cost(self):
@@ -134,17 +139,6 @@ class Order(models.Model):
         day = int(datetime.date.today().strftime('%d'))
         today = datetime.date(year, month, day)  # construct today's date in proper format and object
         return today.strftime('%Y%m%d') + str(self.id)  # django default primary key: id starts from 1 increasing by one
-
-    def sell_products(self):
-        # apply order and update the product stocks and statistics in the inventory
-        ordered_products = PurchasedItem.objects.filter(order=self, buyer=self.owner, )  # transaction=self.transaction
-        for item in ordered_products:
-            preferred_variations = item.variations.all()
-            for preferred_variation in preferred_variations:
-                variation = Variation.objects.get(id=preferred_variation.id)
-                variation.stock -= item.quantity
-                variation.save()
-        self.save()
 
     def status_fa(self):
         return ORDER_STATUS[str(self.status)]

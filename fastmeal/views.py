@@ -15,7 +15,7 @@ class FeedSection:
 def home(request):
     restaurants = Restaurant.objects.filter().order_by('-created_at')  # Order by rating.
     feed: List[FeedSection] = list(map(
-        lambda restaurant: FeedSection(restaurant, Product.objects.filter(restaurant_id=restaurant.id, is_available=True).order_by('-created_at')[:10]),
+        lambda restaurant: FeedSection(restaurant, Product.objects.filter(restaurant_id=restaurant.id).order_by('-created_at')[:10]),
         restaurants))
 
     context = {

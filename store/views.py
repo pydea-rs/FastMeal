@@ -32,9 +32,9 @@ def store(request, category_filter=None):
                 max_price = 0
 
             if min_price > 0:
-                products = products.filter(price__gte=min_price)
+                products = list(filter(lambda p: p.variation_set.is_expensive_than(min_price), products))
             if max_price > 0:
-                products = products.filter(price__lte=max_price)
+                products = list(filter(lambda p: p.variation_set.is_cheaper_than(max_price), products))
 
     except Exception as ex:
         print(ex.__str__())
