@@ -20,10 +20,36 @@
                             <div class="filter-content collapse show" id="collapse_1" style="">
                                 <div class="card-body">
                                     <ul class="list-menu px-1">
-                                        <li class="text-center"><a class="mx-auto btn expandable-button {% if current_category == None %}w-100 btn-outline-success{% else %}btn-outline-dark{% endif %}" href="{% url 'store' %}">همگی</a></li>
+                                        <li class="text-center"><a class="mx-auto btn expandable-button {% if not category_filter %}w-100 btn-outline-success{% else %}btn-outline-dark{% endif %}"
+                                                                   href="{% url 'store' %}{% if restaurant_filter %}?restaurant={{ restaurant_filter.slug }}{% endif %}">همگی</a></li>
                                         {% for category in categories %}
                                             <li class="text-center">
-                                                <a class="btn expandable-button {% if current_category == category.name_fa %}w-100 btn-outline-success{% else %}btn-outline-dark{% endif %}" href="{{category.url}}">{{ category }}</a>
+                                                <a class="btn expandable-button {% if category_filter.id == category.id %}w-100 btn-outline-success{% else %}btn-outline-dark{% endif %}"
+                                                   href="{{category.url}}{% if restaurant_filter %}?restaurant={{ restaurant_filter.slug }}{% endif %}">{{ category }}</a>
+                                            </li>
+                                        {% endfor %}
+                                    </ul>
+
+                                </div>
+                            </div>
+                        </article>
+
+                        <article class="filter-group">
+                            <header class="card-header">
+                                <a href="#" data-toggle="collapse" data-target="#collapse_1" aria-expanded="true" class="">
+                                    <i class="icon-control fa fa-chevron-down"></i>
+                                    <h6 class="title mx-4">رستوران ها</h6>
+                                </a>
+                            </header>
+                            <div class="filter-content collapse show" id="collapse_1" style="">
+                                <div class="card-body">
+                                    <ul class="list-menu px-1">
+                                        <li class="text-center"><a class="mx-auto btn expandable-button {% if not restaurant_filter %}w-100 btn-outline-success{% else %}btn-outline-dark{% endif %}"
+                                                                   href="{% if not category_filter %}{% url 'store' %}{% else %}{{ category_filter.url }}{% endif %}">همگی</a></li>
+                                        {% for restaurant in restaurants %}
+                                            <li class="text-center">
+                                                <a class="btn expandable-button {% if restaurant_filter.id == restaurant.id %}w-100 btn-outline-success{% else %}btn-outline-dark{% endif %}"
+                                                   href="{% if not category_filter %}{% url 'store' %}{% else %}{{ category_filter.url }}{% endif %}?restaurant={{ restaurant.slug }}">{{ restaurant }}</a>
                                             </li>
                                         {% endfor %}
                                     </ul>
@@ -41,9 +67,9 @@
                             </header>
                             <div class="filter-content collapse show" id="collapse_3" style="">
                                 {% if category_filter %}
-                                    <form action="{% url 'filtered_by_category' category_filter %}" method="POST">
+                                    <form action="{% url 'filtered_by_category' category_filter.slug %}{% if restaurant_filter %}?restaurant={{ restaurant_filter.slug }}{% endif %}" method="POST">
                                 {% else %}
-                                    <form action="{% url 'store' %}" method="POST">
+                                    <form action="{% url 'store' %}{% if restaurant_filter %}?restaurant={{ restaurant_filter.slug }}{% endif %}" method="POST">
                                 {% endif %}
                                         {% csrf_token %}
                                         <div class="card-body">
@@ -98,6 +124,9 @@
                                             <figcaption class="info-wrap">
                                                 <div class="fix-height">
                                                     <a href="{{ product.url }}" class="title text-center">{{ product }}</a>
+                                                    <div class="text-center" style="font-size: 90%">
+                                                        {{ product.restaurant }}
+                                                    </div>
                                                     <div class="price-wrap  text-center mt-2">
                                                         <span class="price">{{ product.price | intcomma:False}} تومن</span>
                                                     </div>

@@ -11,7 +11,7 @@
 
             {% for section in feed  %}
                 <header class="section-heading">
-                    <a href="{% url 'store' %}" class="btn btn-outline-primary float-left">بیشتر  ← </a>
+                    <a href="{% url 'store' %}?restaurant={{ section.restaurant.slug }}" class="btn btn-outline-primary float-left">بیشتر  ← </a>
                     <h3 class="text-right section-title">{{ section.restaurant }}</h3>
                 </header><!-- sect-heading -->
                 <div class="row">

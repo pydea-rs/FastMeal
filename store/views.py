@@ -4,6 +4,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from category.models import Category
 from .models import Product, Review, Gallery
 from .forms import ReviewForm
+from restaurant.models import Restaurant
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 import json
@@ -11,15 +12,23 @@ import json
 
 def store(request, category_filter=None):
     max_price = min_price = 0
-    category_fa = None
+    selected_category: Category|None = None
+    selected_restaurant: Restaurant|None = None
     try:
-        products = Product.objects.all()
         if category_filter:
-            obj_expected_categories = get_object_or_404(Category, slug=category_filter)
-            category_fa = obj_expected_categories.name_fa
-            if obj_expected_categories:
-                products = products.filter(category=obj_expected_categories)
+            selected_category = get_object_or_404(Category, slug=category_filter)
+        restaurant_filter = request.GET.get('restaurant')
+        if restaurant_filter:
+            selected_restaurant = get_object_or_404(Restaurant, slug=restaurant_filter)
 
+        if selected_category and restaurant_filter:
+            products = Product.objects.filter(category_id=selected_category.id, restaurant_id=selected_restaurant.id)
+        elif selected_category:
+            products = Product.objects.filter(category_id=selected_category.id)
+        elif selected_restaurant:
+            products = Product.objects.filter(restaurant_id=selected_restaurant.id)
+        else:
+            products = Product.objects.all()
         if request.method == "POST":
             try:
                 min_price = int(request.POST["min_price"])
@@ -43,10 +52,11 @@ def store(request, category_filter=None):
     context = {
         'products': products,
         'products_count': products.count if products else 0,
-        'current_category': category_fa,
-        'category_filter': category_filter,
+        'category_filter': selected_category,
+        'restaurant_filter': selected_restaurant,
         'max_price': max_price,
-        'min_price': min_price
+        'min_price': min_price,
+        'restaurants': Restaurant.objects.all()
     }
 
     return render(request, 'store/store.html', context)

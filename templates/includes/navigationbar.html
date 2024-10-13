@@ -28,7 +28,9 @@
         <div class="container" >
             <div id="navigation-box" class="row align-items-center" style="height:150vh; background: url({% static 'images/logo.png' %}) no-repeat center center ;">
                 {% if request.path != '/' %}
-                    <a href="/" class="btn btn-primary-light mx-auto col-5 col-lg col-sm col-md flex-grow-0"> خونه</a>
+                    <a href="{% url 'home' %}" class="btn btn-primary-light mx-auto col-5 col-lg col-sm col-md flex-grow-0"> خونه</a>
+                {% else %}
+                    <a href="{% url 'store' %}" class="btn btn-info mx-auto col-5 col-lg col-sm col-md flex-grow-0">فروشگاه</a>
                 {% endif %}
                 <div id="category-button" class=" col-5 col-lg col-sm col-md mx-auto flex-grow-0 w-100">
                     <div  dir="ltr" class="category-wrap dropdown d-block float-right w-100">
